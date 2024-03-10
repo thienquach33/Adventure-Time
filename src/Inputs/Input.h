@@ -3,12 +3,16 @@
 
 #include <SDL2/SDL.h>
 
+enum Axis {HORIZONTAL, VERTICAL};
+
 class Input {
     public :
         static Input* getInstance() { return s_Instance = (s_Instance != nullptr) ? s_Instance : new Input(); }
 
         void Listen();
         bool getKeyDown(SDL_Scancode key);
+
+        int getAxisKey(Axis axis);
     private :
         Input();
         void KeyUp();

@@ -8,13 +8,7 @@ TextureManager* TextureManager::s_Instance = nullptr;
 bool TextureManager::Load(std::string id, std::string filename)
 {
     SDL_Surface* surface = IMG_Load(filename.c_str());
-    if(surface == nullptr) {
-        std::cerr << id << "\n";
-    }
     SDL_Texture* texture = SDL_CreateTextureFromSurface(Engine::GetInstance()->getRenderer(), surface);
-    if(texture == nullptr) {
-        std::cerr << id << "\n";
-    }
     m_TextureMap[id] = texture;
     return true;
 }

@@ -9,6 +9,12 @@
 #define JUMP_TIME 15.0f
 #define JUMP_FORCE 10.0f
 
+#define RUN_FORCE 4.0f
+#define ATTACK_TIME 20.0f
+
+#define BACKWARD 1
+#define FORWARD -1
+
 class Sprites : public Character {
     public :    
         Sprites(Properties* props);
@@ -16,13 +22,21 @@ class Sprites : public Character {
         virtual void Update(double dt);
         virtual void Clean();
         virtual void Load(std::string name_animation, std::string path_animation, int num, SDL_RendererFlip flip = SDL_FLIP_NONE);
-        virtual void SetAnimation(std::string animation_name, int num, int speed, SDL_RendererFlip slip = SDL_FLIP_NONE);
+        virtual void SetAnimation(std::string animation_name, int num, int speed);
+        virtual void AnimationState();
     private :
         Animation* m_Animation;
         RigidBody* m_RigidBody;
 
         double m_JumpTime;
         double m_JumpForce;
+        double m_AttackTime;
+
+        bool m_isJumping;
+        bool m_isGrounded;
+        bool m_isFalling;
+        bool m_isRunning;
+        bool m_isAttacking;
 
         Collider* m_Collider;
 

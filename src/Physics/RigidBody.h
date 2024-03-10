@@ -16,8 +16,8 @@ class RigidBody {
         inline void SetMass (double mass) { m_Mass = mass; }
         inline void SetGravity (double gravity) { m_Gravity = gravity; }
         inline void ApplyForce (Vector2D F) { m_Force = F; }
-        inline void ApplyForceX (double FX) { m_Force = FX; }
-        inline void ApplyForceY (double FY) { m_Force = FY; }
+        inline void ApplyForceX (double FX) { m_Force.X = FX; }
+        inline void ApplyForceY (double FY) { m_Force.Y = FY; }
         inline void UnSetForce () { m_Force = Vector2D(0, 0); }
 
         inline void ApplyFriction(Vector2D Fr) { m_Friction = Fr; }

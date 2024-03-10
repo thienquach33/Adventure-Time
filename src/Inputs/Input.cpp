@@ -26,6 +26,26 @@ void Input::Listen() {
     }
 }
 
+int Input::getAxisKey(Axis axis) {
+    if(axis == 0) {
+        if(getKeyDown(SDL_SCANCODE_D) || getKeyDown(SDL_SCANCODE_RIGHT)) {
+            return 1;
+        }
+        
+        if(getKeyDown(SDL_SCANCODE_A) || getKeyDown(SDL_SCANCODE_LEFT)) {
+            return -1;
+        }
+    }
+    else if(axis == 1) {
+        if(getKeyDown(SDL_SCANCODE_W) || getKeyDown(SDL_SCANCODE_UP)) 
+            return 1;
+        
+        if(getKeyDown(SDL_SCANCODE_S) || getKeyDown(SDL_SCANCODE_DOWN))
+            return -1;
+    }
+    return 0;   
+}
+
 bool Input::getKeyDown(SDL_Scancode key) {
     return m_KeyStates[key];
 }

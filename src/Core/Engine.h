@@ -20,6 +20,8 @@ class Engine {
         void Render();
         void Events();
 
+        GameMap* GetMap() { return m_LevelMap; }
+
         inline bool isRunning() { return m_isRunning; }
         inline  SDL_Renderer* getRenderer() { return m_Renderer; }
 

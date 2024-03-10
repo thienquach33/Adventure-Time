@@ -13,6 +13,7 @@
 #include "vendor/tinyxmlerror.cpp"
 #include "vendor/tinyxmlparser.cpp"
 #include "Camera/Camera.cpp"
+#include "Collision/CollisionHandler.cpp"
 
 int main() {
     

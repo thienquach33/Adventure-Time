@@ -14,9 +14,9 @@ class CollisionHandler {
 
         inline static CollisionHandler* GetInstance() { return s_Instance = (s_Instance != nullptr) ? s_Instance : new CollisionHandler(); }
     private : 
-        CollisionHander();
-        TileMap m_LayerTileMap;
-        TileMap* m_CollisionLayer;
+        CollisionHandler();
+        TileMap m_CollisionTilemap;
+        TileLayer* m_CollisionLayer;
         static CollisionHandler* s_Instance;
 };
 
