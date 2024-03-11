@@ -7,7 +7,7 @@
 #include "../Physics/Collider.h"
 
 #define JUMP_TIME 15.0f
-#define JUMP_FORCE 10.0f
+#define JUMP_FORCE 12.0f
 
 #define RUN_FORCE 4.0f
 #define ATTACK_TIME 20.0f
@@ -22,8 +22,11 @@ class Sprites : public Character {
         virtual void Update(double dt);
         virtual void Clean();
         virtual void Load(std::string name_animation, std::string path_animation, int num, SDL_RendererFlip flip = SDL_FLIP_NONE);
-        virtual void SetAnimation(std::string animation_name, int num, int speed);
+        virtual void SetAnimation(std::string animation_name, int num, int speed, int delay_attack = 0);
         virtual void AnimationState();
+        inline int getAttack() { return m_isAttacking; }
+
+        int attackStartTicks = 0;
     private :
         Animation* m_Animation;
         RigidBody* m_RigidBody;

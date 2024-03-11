@@ -19,7 +19,7 @@ bool Engine::Init() {
     m_Renderer = SDL_CreateRenderer(m_Window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     SDL_Log("Success Init !!!\n");
 
-    player = new Sprites(new Properties("player-idle", 100, 200, 64, 40, 5));
+    player = new Sprites(new Properties("player-idle", 600, 600, 64, 40, 5));
 
     player->Load("player-idle", "assets/player/Idle/Idle Sword", 5);
     player->Load("player-attack", "assets/player/Player_Attack/Attack", 3);

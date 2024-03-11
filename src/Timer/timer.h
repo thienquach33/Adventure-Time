@@ -2,7 +2,7 @@
 #define TIMER_H
 
 const int TARGET_FPS = 90;
-const double TARGET_DELTATIME = 1.5f;
+const double TARGET_DELTATIME = 2.0f;
 
 class Timer {
     public : 

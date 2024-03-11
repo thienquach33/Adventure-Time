@@ -35,8 +35,6 @@ void Sprites::Draw() {
     SDL_Rect box = m_Collider->Get();
     box.x -= cam.X;
     box.y -= cam.Y;
-    box.x += (18 * 5);
-    box.y += (3 * 5);
     SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
 }
 
@@ -48,26 +46,26 @@ void Sprites::Load(std::string name_animation, std::string path_animation, int n
     }
 }
 
-void Sprites::SetAnimation(std::string animation_name, int num, int speed) {
+void Sprites::SetAnimation(std::string animation_name, int num, int speed, int delay_attack) {
     animation_name += "-" + std::__cxx11::to_string(m_Animation->cur_frame);
-    m_Animation->setProps(animation_name, num, speed);
+    m_Animation->setProps(animation_name, num, speed, delay_attack);
 }
 
 void Sprites::Update(double dt) {
-    SetAnimation("player-idle", 5, 100);
+    SetAnimation("player-idle", 5, 100, 0);
     m_isRunning = false;
     m_RigidBody->UnSetForce();
 
     // running
     if(Input::getInstance()->getAxisKey(HORIZONTAL) == FORWARD && !m_isAttacking) {
         m_RigidBody->ApplyForceX(FORWARD * RUN_FORCE);
-        m_Flip = SDL_FLIP_NONE;
+        m_Flip = SDL_FLIP_HORIZONTAL;
         m_isRunning = true;
     }
 
     if(Input::getInstance()->getAxisKey(HORIZONTAL) == BACKWARD && !m_isAttacking) {
         m_RigidBody->ApplyForceX(BACKWARD * RUN_FORCE);
-        m_Flip = SDL_FLIP_HORIZONTAL;
+        m_Flip = SDL_FLIP_NONE;
         m_isRunning = true;
     }
 
@@ -110,7 +108,7 @@ void Sprites::Update(double dt) {
     m_RigidBody->Update(dt);
     m_LastSafePosition.X = m_Transform->X;
     m_Transform->X += m_RigidBody->Position().X;
-    m_Collider->Set(m_Transform->X, m_Transform->Y, 200, 145);
+    m_Collider->Set(m_Transform->X + 18 * 5, m_Transform->Y + 3 * 5, 130, 130);
     
     if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
         m_Transform->X = m_LastSafePosition.X;
@@ -120,7 +118,7 @@ void Sprites::Update(double dt) {
     m_RigidBody->Update(dt);
     m_LastSafePosition.Y = m_Transform->Y;
     m_Transform->Y += m_RigidBody->Position().Y;
-    m_Collider->Set(m_Transform->X, m_Transform->Y, 200, 145);
+    m_Collider->Set(m_Transform->X + 18 * 5, m_Transform->Y + 3 * 5, 130, 130);
 
     if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
         m_isGrounded = true;
@@ -132,19 +130,25 @@ void Sprites::Update(double dt) {
 
     m_Origin->x = m_Transform->X + m_Width / 2;
     m_Origin->y = m_Transform->Y + m_Height / 2;
-    m_Animation->Update();
+
     AnimationState();
+    m_Animation->Update();
 }
 
 void Sprites::AnimationState() {
-    SetAnimation("player-idle", 5, 100);
+    SetAnimation("player-idle", 5, 100, 0);
 
     if(m_isRunning) 
-        SetAnimation("player-run", 6, 100);
+        SetAnimation("player-run", 6, 100, 0);
     if(m_isJumping)
-        SetAnimation("player-jump", 3, 100);
-    if(m_isAttacking)
-        SetAnimation("player-attack", 3, 100);
+        SetAnimation("player-jump", 3, 60, 0);
+    if(m_isAttacking) {
+        if(attackStartTicks == 0) {
+            attackStartTicks = SDL_GetTicks();
+        }
+        SetAnimation("player-attack", 3, 150, attackStartTicks);
+    }
+    else attackStartTicks = 0;
 }
 
 void Sprites::Clean() {
