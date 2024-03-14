@@ -5,6 +5,7 @@
 #include "Characters/Monster.cpp"
 #include "Characters/Object.cpp"
 #include "Characters/item.cpp"
+#include "Characters/effect.cpp"
 #include "Inputs/Input.cpp"
 #include "Animation/Animation.cpp"
 #include "Timer/timer.cpp"

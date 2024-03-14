@@ -44,7 +44,6 @@ Sprites::Sprites(Properties* props) : Character(props) {
 
 void Sprites::Draw() {
     m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
-
     Vector2D cam = Camera::GetInstance()->GetPostision();
     SDL_Rect box = m_Collider->Get();
     box.x -= cam.X;
@@ -176,7 +175,27 @@ void Sprites::Update(double dt) {
             t->applydx(0);
             m_isPushing = false;
         }
-        if(abs(m_Collider->Get().x - t->getCollider().x) <= 190 && m_isAttacking) {
+        auto sword_collider = m_Collider->Get();
+        if(m_Flip == SDL_FLIP_NONE)
+            sword_collider.w += 50;
+        else 
+            sword_collider.x -= 50;
+        if(CollisionHandler::GetInstance()->checkCollision(sword_collider, t->getCollider()) && m_isAttacking) {
+            t->setHit(true);
+        }
+        else {
+            t->setHit(false);
+        }
+    }
+
+    // check attack enemy 
+    for(auto &t : m_enemy) {
+        auto sword_collider = m_Collider->Get();
+        if(m_Flip == SDL_FLIP_NONE)
+            sword_collider.w += 50;
+        else 
+            sword_collider.x -= 50;
+        if(CollisionHandler::GetInstance()->checkCollision(sword_collider, t->getCollider()) && m_isAttacking) {
             t->setHit(true);
         }
         else {
@@ -246,8 +265,14 @@ void Sprites::AnimationState() {
             attackStartTicks = SDL_GetTicks();
         }
         SetAnimation("player-attack", 3, 150, attackStartTicks);
+        int diff = (m_Flip == SDL_FLIP_NONE) ? 200 : -50;
+        m_Effect->setAttack(true);
+        m_Effect->SetAnimation("player-attack-effect", m_Transform->X + diff, m_Transform->Y, 3, 200, attackStartTicks, m_Flip);
     }
-    else attackStartTicks = 0;
+    else {
+        attackStartTicks = 0;
+        m_Effect->setAttack(false);
+    }
     if(m_dead) {
         if(m_DeadTime >= 100.0f) Respawn();
         else {

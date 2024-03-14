@@ -9,19 +9,21 @@
 #include "../map/MapParser.h"
 #include "../Characters/Object.h"
 #include "../Characters/item.h"
+#include "../Characters/effect.h"
 
 Engine *Engine::s_Instance = nullptr;
 Sprites* player = nullptr;
-Monster* enemy = nullptr;
+Effect* player_attack_effected = nullptr;
 Mix_Chunk* gameMusic;
 Mix_Chunk* gameOver;
 
 std::vector<Object*> box;
 std::vector<Item*> coin;
+std::vector<Monster*> enemy;
 
 std::vector<std::pair<int, int>> postision_box_1 = { {6, 15}, {15, 15}, {34, 10}, {48, 13} };
 std::vector<std::pair<int, int>> sliver_postision_item_1 = { {9, 15}, {11 , 15}, {13, 17}, {22, 14}, {28, 14}, {35, 12}, {40, 16}, {48, 15}, {55, 13}, {67, 7}, {31, 16}};
-// std::vector<std::pair<int, int>> sliver_postision_item_1 = { {6, 15}, {15, 15}, {34, 10}, {48, 13} };    
+std::vector<std::pair<int, int>> enemy_postision = { {22, 10}, {19, 16}, {47, 14}};
 
 const int NUM_BOX_1 = 4;
 // const int SLIVER_COIN = 10;
@@ -73,12 +75,26 @@ bool Engine::Init() {
     //     item.push_back(new_sliver_coin);
     // }
 
+    player_attack_effected = new Effect(new Properties("player-attack-effected", 600, 600, 64, 40, 5));
+    player_attack_effected->Load("player-attack-effect", "assets/player/player_attack_effect/Attack", 3);
+
     player->addBox(box);
     player->addItem(coin);
+    player->addEffect(player_attack_effected);
 
     m_LevelMap = MapParser::GetInstance()->GetMap("LEVEL_1");
 
-    // enemy = new Monster(new Properties("monster", 100, 500, 34, 30, 5, "assets/enemy/01-Idle/Idle-"));
+    for(auto pos : enemy_postision) {
+        Monster* new_enemy = new Monster(new Properties("monster", pos.first * 80, pos.second * 80, 34, 30, 5));
+        new_enemy->Load("enemy-idle", "assets/enemy/01-Idle/Idle", 8);
+        new_enemy->Load("enemy-run", "assets/enemy/02-Run/Run", 6);
+        new_enemy->Load("enemy-hit", "assets/enemy/05-Hit/hit", 4);
+        new_enemy->Load("enemy-dead", "assets/enemy/06-Dead Hit/enemy-hit", 4);
+        new_enemy->Load("enemy-deaded", "assets/enemy/07-Dead Ground/dead", 4);
+        enemy.push_back(new_enemy);
+    }
+
+    player->addEnemy(enemy);
 
     Camera::GetInstance()->SetTarget(player->GetOrigin());
 
@@ -88,6 +104,7 @@ bool Engine::Init() {
 void Engine::Update() {
     double dt = Timer::getInstance()->getDeltaTime();
     player->Update(dt);
+    player_attack_effected->Update(dt);
     if(player->getTurn() > 1) {
         // Mix_PlayChannel(-1, gameOver, 0);
         Quit();
@@ -107,6 +124,9 @@ void Engine::Update() {
             ++it;
         }
     }
+    for(auto t : enemy) {
+        t->Update(dt);
+    }
     for(auto t : box) {
         t->Update(dt);
     }
@@ -114,7 +134,6 @@ void Engine::Update() {
         t->Update(dt);
     }
     Camera::GetInstance()->Update(dt);
-    // enemy->Update(0);
 }
 
 bool Engine::Clean() {
@@ -132,9 +151,12 @@ bool Engine::Clean() {
 void Engine::Render() {
     SDL_SetRenderDrawColor(m_Renderer, 124, 218, 254, 255);
     SDL_RenderClear(m_Renderer);
-    // enemy->Draw();
     m_LevelMap->Render();
     player->Draw();
+    for(auto t : enemy) {
+        t->Draw();
+    }
+    player_attack_effected->Draw();
     for(auto t : box) {
         t->Draw();
     }

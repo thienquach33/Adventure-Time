@@ -7,7 +7,9 @@
 #include "../Physics/Collider.h"
 #include "Object.h"
 #include "item.h"
+#include "effect.h"
 #include <SDL2/SDL_mixer.h>
+#include "Monster.h"
 
 #define JUMP_TIME 15.0f
 #define JUMP_FORCE 13.0f
@@ -34,6 +36,8 @@ class Sprites : public Character {
         virtual Mix_Chunk* LoadSound(const std::string& path);
         virtual void Respawn();
         virtual int getTurn() { return turn_play; }
+        virtual void addEffect(Effect* attack_effect) { m_Effect = attack_effect; }
+        virtual void addEnemy(std::vector<Monster*> enemy) { m_enemy = enemy; }
 
         int attackStartTicks = 0;
     private :
@@ -58,6 +62,9 @@ class Sprites : public Character {
         Collider* m_Trap;
         std::vector<Object*> m_box;
         std::vector<Item*> m_item;
+        std::vector<Monster*> m_enemy;
+
+        Effect* m_Effect;
 
         Vector2D m_LastSafePosition;
         Vector2D m_lastSafePostion2;

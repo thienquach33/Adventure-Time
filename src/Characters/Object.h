@@ -48,7 +48,7 @@ class Object : public Character {
         double m_JumpForce;
         double m_AttackTime;
 
-        int heal_of_box = 100;
+        int heal_of_box = 300;
 
         int dx = 0;
 

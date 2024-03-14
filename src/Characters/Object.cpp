@@ -15,7 +15,7 @@ Object::Object(Properties* props) : Character(props) {
     m_Animation = new Animation();
 
     m_RigidBody = new RigidBody();
-    m_RigidBody->SetGravity(5.0f);
+    m_RigidBody->SetGravity(2.0f);
 }
 
 void Object::Draw() {
@@ -56,10 +56,18 @@ void Object::Update(double dt) {
         m_Transform->X = m_LastSafePosition.X;
     }   
 
+
     m_RigidBody->Update(dt);
     m_LastSafePosition.Y = m_Transform->Y;
     m_Transform->Y += m_RigidBody->Position().Y;
     m_Collider->Set(m_Transform->X, m_Transform->Y, 25 * 5, 17 * 5);
+
+    if(heal_of_box == 0) {
+        m_RigidBody->SetGravity(1.5f);
+        m_DestroyTimer += dt;
+        m_Collider->Set(m_Transform->X, m_Transform->Y, 15, 30);
+        m_Transform->Y += m_RigidBody->Position().Y;
+    }
 
     if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
         m_isGrounded = true;
@@ -72,10 +80,6 @@ void Object::Update(double dt) {
     m_Origin->x = m_Transform->X + m_Width / 2;
     m_Origin->y = m_Transform->Y + m_Height / 2;
 
-    if(heal_of_box == 0) {
-        m_DestroyTimer += dt;
-    }
-
     AnimationState();
     m_Animation->Update();
 
@@ -86,10 +90,10 @@ void Object::AnimationState() {
         heal_of_box = std::max(heal_of_box - 10, 0);
         SetAnimation("box-hit", 4, 100, 0);
     }
-    if(heal_of_box == 0) {
+    if(heal_of_box <= 0) {
         SetAnimation("box-destroy", 5, 200, 0);
         m_scale = 2;
-        if(m_DestroyTimer >= 100.0f) {
+        if(m_DestroyTimer >= 150.0f) {
             m_tobeDestroy = true;
         }
     }

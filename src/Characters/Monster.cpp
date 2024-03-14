@@ -1,27 +1,189 @@
 #include "Monster.h"
 #include "../Graphics/TextureManager.h"
+#include "../Physics/RigidBody.h"
 #include "SDL2/SDL.h"
+#include "../Camera/Camera.h"
+#include "../Core/Engine.h"
+#include "../Inputs/Input.h"
+#include "../Collision/CollisionHandler.h"
+#include "../Collision/TrapCollision.h"
+#include "Object.h"
+#include "../Core/Engine.h"
 
 Monster::Monster(Properties* props) : Character(props) { 
-    m_FrameCount = 8;
-    m_AnimationSpeed = 80;
+    m_isRunning = false;
+    m_isRunning = false;
+    m_isFalling = false;
+    m_isGrounded = false;
+    m_isAttacking = false;
+    m_dead = false;
 
-    // for(int i = 0; i < m_FrameCount; i++) {
-    //     std::string file_path = m_Path + std::__cxx11::to_string(i) + ".png";
-    //     std::string name_frame = "monster_animation_idle-" + std::__cxx11::to_string(i);
-    //     TextureManager::GetInstance()->Load(name_frame, file_path);
-    // }
+    m_Flip = SDL_FLIP_NONE;
+    m_JumpTime = JUMP_TIME;
+    m_JumpForce = JUMP_FORCE;
+    m_AttackTime = ATTACK_TIME;
+
+    m_Collider = new Collider();
+    m_Collider->SetBuffer(0, 0, 0, 0);
+
+    m_Trap = new Collider();
+    m_Trap->SetBuffer(0, 0, 0, 0);
+
+    m_Animation = new Animation();
+    
+    m_RigidBody = new RigidBody();
+    m_RigidBody->SetGravity(4.0f);
 }
 
 void Monster::Draw() {
-    // std::string name_frame = "monster_animation_idle-" + std::__cxx11::to_string(m_Frame);
-    // TextureManager::GetInstance()->Draw(name_frame, m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale);
+    m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
+
+    Vector2D cam = Camera::GetInstance()->GetPostision();
+    SDL_Rect box = m_Collider->Get();
+    box.x -= cam.X;
+    box.y -= cam.Y;
+    SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
+}
+
+void Monster::Load(std::string name_animation, std::string path_animation, int num, SDL_RendererFlip flip) {
+    for(int i = 0; i < num; i++) {
+        std::string file_path = path_animation + "-" + std::__cxx11::to_string(i) + ".png";
+        std::string name_frame = name_animation + "-" + std::__cxx11::to_string(i);
+        TextureManager::GetInstance()->Load(name_frame, file_path);
+    }
+}
+
+Mix_Chunk* Monster::LoadSound(const std::string& filePath) {
+    Mix_Chunk* sound = Mix_LoadWAV(filePath.c_str());
+    if(sound == nullptr) {
+        std::cerr << "Failed to load sound: " << Mix_GetError() << "\n";
+    }
+    return sound;
+}
+
+void Monster::SetAnimation(std::string animation_name, int num, int speed, int delay_attack) {
+    animation_name += "-" + std::__cxx11::to_string(m_Animation->cur_frame);
+    m_Animation->setProps(animation_name, num, speed, delay_attack);
+}
+
+void Monster::Respawn(){
+    m_Transform->X = 600;
+    m_Transform->Y = 600;
+    m_dead = false;
+    m_DeadTime = 0;
+    ++turn_play;
 }
 
 void Monster::Update(double dt) {
-    m_Frame = (SDL_GetTicks() / m_AnimationSpeed) % m_FrameCount;
+    SetAnimation("enemy-idle", 8, 100, 0);
+    m_isRunning = false;
+    m_RigidBody->UnSetForce();
+
+    if(!m_isFalling && !m_isAttacking && !m_dead && heal_of_enemy > 0) {
+
+        switch(m_State) {
+            case State::MovingLeft:
+                m_isRunning = true;
+                m_RigidBody->ApplyForceX(FORWARD * 2.0f); // Adjust the force as needed
+                m_MoveTime += dt;
+                if(m_MoveTime >= 70.0f) { // Adjust the time as needed
+                    m_State = State::IdleLeft;
+                    m_MoveTime = 0.0;
+                    m_Flip = SDL_FLIP_HORIZONTAL;
+                }
+                break;
+            case State::MovingRight:
+                m_isRunning = true;
+                m_RigidBody->ApplyForceX(BACKWARD * 2.0f); // Adjust the force as needed
+                m_MoveTime += dt;
+                if(m_MoveTime >= 70.0f) { // Adjust the time as needed
+                    m_State = State::IdleRight;
+                    m_MoveTime = 0.0;
+                    m_Flip = SDL_FLIP_NONE;
+                }
+                break;
+            case State::IdleLeft:
+                m_IdleTime += dt;
+                if(m_IdleTime >= 80.0f) { // Adjust the time as needed
+                    m_State = State::MovingRight;
+                    m_IdleTime = 0.0;
+                }
+                break;
+            case State::IdleRight:
+                m_IdleTime += dt;
+                if(m_IdleTime >= 80.0f) { // Adjust the time as needed
+                    m_State = State::MovingLeft;
+                    m_IdleTime = 0.0;
+                }
+                break;
+        }
+    }
+
+    if(m_RigidBody->Velocity().Y > 0 && !m_isGrounded) m_isFalling = true;
+    else m_isFalling = false;
+
+    // move_x
+    m_RigidBody->Update(dt);
+    m_LastSafePosition.X = m_Transform->X;
+    m_Transform->X += m_RigidBody->Position().X;
+    m_Collider->Set(m_Transform->X + 10 * 5, m_Transform->Y + 5 * 5, 20 * 5, 20 * 5);
+
+    if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
+        m_Transform->X = m_LastSafePosition.X;
+    }
+
+    m_RigidBody->Update(dt);
+    m_LastSafePosition.Y = m_Transform->Y;
+    m_Transform->Y += m_RigidBody->Position().Y;
+    m_Collider->Set(m_Transform->X + 10 * 5, m_Transform->Y + 5 * 5, 20 * 5, 20 * 5);
+
+    if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
+        m_isGrounded = true;
+        m_Transform->Y = m_LastSafePosition.Y;
+    }
+    else {
+        m_isGrounded = false;
+    }
+
+    if(heal_of_enemy == 0) {
+        m_DeadTime += dt;
+    }
+
+    m_Origin->x = m_Transform->X + m_Width / 2;
+    m_Origin->y = m_Transform->Y + m_Height / 2;
+
+    AnimationState();
+    m_Animation->Update();
+}
+
+void Monster::AnimationState() {
+    if(m_isRunning) {
+        SetAnimation("enemy-run", 6, 100, 0);
+    }
+    if(m_isHitting) {
+        if(heal_of_enemy >= 10) {
+            heal_of_enemy = std::max(heal_of_enemy - 10, 0);
+            int cur = SDL_GetTicks();
+            SetAnimation("enemy-hit", 4, 200, cur);
+        }
+    }
+    if(heal_of_enemy == 0) {
+        if(m_DeadTime >= 200.0f) {
+            m_tobeDestroy = true;
+            SetAnimation("enemy-deaded", 4, 200, 0);    
+        }
+        else {
+            SetAnimation("enemy-dead", 4, 200, 0);
+        }
+    }
 }
 
 void Monster::Clean() {
-    TextureManager::GetInstance()->Clean();
+    TextureManager::GetInstance()->Drop(m_TextureID);
+    Mix_FreeChunk(m_getCoinSound);
+    Mix_FreeChunk(m_jumpSound);
+    Mix_FreeChunk(m_hurtSound);
 }
+
+
+
