@@ -6,6 +6,9 @@
 #include "../Core/Engine.h"
 #include "../Inputs/Input.h"
 #include "../Collision/CollisionHandler.h"
+#include "../Collision/TrapCollision.h"
+#include "Object.h"
+#include "../Core/Engine.h"
 
 Sprites::Sprites(Properties* props) : Character(props) { 
     m_isRunning = false;
@@ -13,19 +16,30 @@ Sprites::Sprites(Properties* props) : Character(props) {
     m_isFalling = false;
     m_isGrounded = false;
     m_isAttacking = false;
+    m_dead = false;
 
     m_Flip = SDL_FLIP_NONE;
     m_JumpTime = JUMP_TIME;
     m_JumpForce = JUMP_FORCE;
     m_AttackTime = ATTACK_TIME;
-    
+
     m_Collider = new Collider();
     m_Collider->SetBuffer(0, 0, 0, 0);
+
+    m_Trap = new Collider();
+    m_Trap->SetBuffer(0, 0, 0, 0);
 
     m_Animation = new Animation();
     
     m_RigidBody = new RigidBody();
-    m_RigidBody->SetGravity(3.0f);
+    m_RigidBody->SetGravity(4.0f);
+
+    turn_play = 0;
+
+    m_getCoinSound = LoadSound("assets/sounds/item.wav");
+    m_jumpSound = LoadSound("assets/sounds/jump.wav");
+    m_hurtSound = LoadSound("assets/sounds/hurt.wav");
+    m_deadSound = LoadSound("assets/sounds/death.wav");
 }
 
 void Sprites::Draw() {
@@ -46,9 +60,25 @@ void Sprites::Load(std::string name_animation, std::string path_animation, int n
     }
 }
 
+Mix_Chunk* Sprites::LoadSound(const std::string& filePath) {
+    Mix_Chunk* sound = Mix_LoadWAV(filePath.c_str());
+    if(sound == nullptr) {
+        std::cerr << "Failed to load sound: " << Mix_GetError() << "\n";
+    }
+    return sound;
+}
+
 void Sprites::SetAnimation(std::string animation_name, int num, int speed, int delay_attack) {
     animation_name += "-" + std::__cxx11::to_string(m_Animation->cur_frame);
     m_Animation->setProps(animation_name, num, speed, delay_attack);
+}
+
+void Sprites::Respawn(){
+    m_Transform->X = 600;
+    m_Transform->Y = 600;
+    m_dead = false;
+    m_DeadTime = 0;
+    ++turn_play;
 }
 
 void Sprites::Update(double dt) {
@@ -56,17 +86,38 @@ void Sprites::Update(double dt) {
     m_isRunning = false;
     m_RigidBody->UnSetForce();
 
+    for(auto it = m_box.begin(); it != m_box.end(); /* no increment here */) {
+        if((*it)->isToBeDestroyed()) {
+            it = m_box.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    for(auto it = m_item.begin(); it != m_item.end(); /* no increment here */) {
+        if((*it)->isToBeDestroyed()) {
+            it = m_item.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    int dx = 0;
     // running
+    int run_speed = RUN_FORCE;
+    if(m_isPushing) run_speed = PUSH_FORCE;
     if(Input::getInstance()->getAxisKey(HORIZONTAL) == FORWARD && !m_isAttacking) {
-        m_RigidBody->ApplyForceX(FORWARD * RUN_FORCE);
+        m_RigidBody->ApplyForceX(FORWARD * run_speed);
         m_Flip = SDL_FLIP_HORIZONTAL;
         m_isRunning = true;
+        dx = FORWARD;
     }
 
     if(Input::getInstance()->getAxisKey(HORIZONTAL) == BACKWARD && !m_isAttacking) {
-        m_RigidBody->ApplyForceX(BACKWARD * RUN_FORCE);
+        m_RigidBody->ApplyForceX(BACKWARD * run_speed);
         m_Flip = SDL_FLIP_NONE;
         m_isRunning = true;
+        dx = BACKWARD;
     }
 
     // attacking
@@ -77,6 +128,7 @@ void Sprites::Update(double dt) {
 
     // jumping
     if(Input::getInstance()->getKeyDown(SDL_SCANCODE_SPACE) && m_isGrounded) {
+        Mix_PlayChannel(-1, m_jumpSound, 0);
         m_isJumping = true;
         m_isGrounded = false;
         m_RigidBody->ApplyForceY(FORWARD * m_JumpForce);
@@ -104,28 +156,75 @@ void Sprites::Update(double dt) {
         m_AttackTime = ATTACK_TIME;
     }
 
+    bool ok = false;
+
     // move_x
     m_RigidBody->Update(dt);
     m_LastSafePosition.X = m_Transform->X;
     m_Transform->X += m_RigidBody->Position().X;
-    m_Collider->Set(m_Transform->X + 18 * 5, m_Transform->Y + 3 * 5, 130, 130);
-    
+    m_Collider->Set(m_Transform->X + 22 * 5, m_Transform->Y + 3 * 5, 100, 130);
+
+    for(auto &t : m_box) {
+        if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getCollider())) {
+            m_Transform->X = m_LastSafePosition.X;
+            m_Transform->Y = m_LastSafePosition.Y;
+
+            m_isPushing = true;
+            t->applydx(dx);
+        }
+        else {
+            t->applydx(0);
+            m_isPushing = false;
+        }
+        if(abs(m_Collider->Get().x - t->getCollider().x) <= 190 && m_isAttacking) {
+            t->setHit(true);
+        }
+        else {
+            t->setHit(false);
+        }
+    }
+
     if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
         m_Transform->X = m_LastSafePosition.X;
     }
 
-    // move y
     m_RigidBody->Update(dt);
     m_LastSafePosition.Y = m_Transform->Y;
     m_Transform->Y += m_RigidBody->Position().Y;
-    m_Collider->Set(m_Transform->X + 18 * 5, m_Transform->Y + 3 * 5, 130, 130);
+    m_Collider->Set(m_Transform->X + 22 * 5, m_Transform->Y + 3 * 5, 100, 130);
+
+    bool above = false;
+
+    for(auto &t : m_box) {
+        if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getCollider())) {
+            m_Transform->Y = m_LastSafePosition.Y;
+            m_isGrounded = true;
+            above = true;
+        }
+    }
 
     if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
         m_isGrounded = true;
         m_Transform->Y = m_LastSafePosition.Y;
-    } 
-    else {
+    }
+    else if(!above) {
         m_isGrounded = false;
+    }
+
+    // check get coin
+
+    for(auto &t : m_item) {
+        if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getCollider())) {
+            Mix_PlayChannel(-1, m_getCoinSound, 0);
+            t->eat();
+        }
+    }
+
+    // check game over
+    if(TrapCollision::GetInstance()->checkTrapCollision(m_Collider->Get())) {
+        m_Transform->Y = m_LastSafePosition.Y;
+        m_dead = true;
+        m_DeadTime += dt;
     }
 
     m_Origin->x = m_Transform->X + m_Width / 2;
@@ -149,10 +248,20 @@ void Sprites::AnimationState() {
         SetAnimation("player-attack", 3, 150, attackStartTicks);
     }
     else attackStartTicks = 0;
+    if(m_dead) {
+        if(m_DeadTime >= 100.0f) Respawn();
+        else {
+            Mix_PlayChannel(-1, m_deadSound, 0);   
+            SetAnimation("player-dead", 4, 150, 0);
+        }
+    }
 }
 
 void Sprites::Clean() {
     TextureManager::GetInstance()->Drop(m_TextureID);
+    Mix_FreeChunk(m_getCoinSound);
+    Mix_FreeChunk(m_jumpSound);
+    Mix_FreeChunk(m_hurtSound);
 }
 
 
