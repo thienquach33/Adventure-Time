@@ -10,6 +10,7 @@
 #include "../Characters/Object.h"
 #include "../Characters/item.h"
 #include "../Characters/effect.h"
+#include "../Inputs/Mouse.h"
 
 Engine *Engine::s_Instance = nullptr;
 Sprites* player = nullptr;
@@ -20,12 +21,15 @@ Mix_Chunk* gameOver;
 std::vector<Object*> box;
 std::vector<Item*> coin;
 std::vector<Monster*> enemy;
+std::vector<Item*> heal;
+Object* portal_gate;
 
 std::vector<std::pair<int, int>> postision_box_1 = { {6, 15}, {15, 15}, {34, 10}, {48, 13} };
 std::vector<std::pair<int, int>> sliver_postision_item_1 = { {9, 15}, {11 , 15}, {13, 17}, {22, 14}, {28, 14}, {35, 12}, {40, 16}, {48, 15}, {55, 13}, {67, 7}, {31, 16}};
 std::vector<std::pair<int, int>> enemy_postision = { {22, 10}, {19, 16}, {47, 14}};
 
 const int NUM_BOX_1 = 4;
+const int NUM_OF_HEAL = 3;
 // const int SLIVER_COIN = 10;
 
 bool Engine::Init() {
@@ -58,14 +62,23 @@ bool Engine::Init() {
         new_box->Load("box-idle", "assets/Objects/Box/Idle/idle", 1);
         new_box->Load("box-hit", "assets/Objects/Box/Hit/hit", 4);
         new_box->Load("box-destroy", "assets/Objects/Box/Destroyed/destroy", 5);
+        new_box->setType(0);
         box.push_back(new_box);
     }
 
     for(auto pos : sliver_postision_item_1) {
-        Item* new_coin = new Item(new Properties("gold-coin", pos.first * 80, pos.second * 80, 16, 16, 5));
+        Item* new_coin = new Item(new Properties("sliver-coin", pos.first * 80, pos.second * 80, 16, 16, 5));
         new_coin->Load("sliver-coin", "assets/Objects/Silver Coin/sliver-coin", 4);
         new_coin->Load("coin-effect", "assets/Objects/Coin Effect/coin-effect", 3);
+        new_coin->setType(0);
         coin.push_back(new_coin);
+    }
+
+    for(int i = 0; i < NUM_OF_HEAL; i++) {
+        Item* new_heal = new Item(new Properties("heal-full", 17 * 80 + i * 80, 10 * 80, 9, 9, 8));
+        new_heal->Load("heal-full", "assets/ui/full_blinking", 1);
+        new_heal->setType(1);
+        heal.push_back(new_heal);
     }
 
     // for(int i = 0; i < SLIVER_COIN; i++) {
@@ -75,12 +88,18 @@ bool Engine::Init() {
     //     item.push_back(new_sliver_coin);
     // }
 
+    portal_gate = new Object(new Properties("portal-gate", 17 * 80, 10 * 80, 20, 32, 10));
+    portal_gate->Load("portal-gate", "assets/Objects/portal-gate/pixil-frame", 6);
+    portal_gate->setType(1);
+    player->addGateLevel(portal_gate);    
+
     player_attack_effected = new Effect(new Properties("player-attack-effected", 600, 600, 64, 40, 5));
     player_attack_effected->Load("player-attack-effect", "assets/player/player_attack_effect/Attack", 3);
 
     player->addBox(box);
     player->addItem(coin);
     player->addEffect(player_attack_effected);
+    player->addHeal(heal);
 
     m_LevelMap = MapParser::GetInstance()->GetMap("LEVEL_1");
 
@@ -97,6 +116,7 @@ bool Engine::Init() {
     player->addEnemy(enemy);
 
     Camera::GetInstance()->SetTarget(player->GetOrigin());
+    Mouse::getInstance()->Load("mouse", "assets/inputs/slick_arrow-arrow.png");
 
     return m_isRunning = true;
 }
@@ -105,11 +125,18 @@ void Engine::Update() {
     double dt = Timer::getInstance()->getDeltaTime();
     player->Update(dt);
     player_attack_effected->Update(dt);
-    if(player->getTurn() > 1) {
-        // Mix_PlayChannel(-1, gameOver, 0);
+    if(player->getTurn() > NUM_OF_HEAL) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Game Over", "You Lose", NULL);
         Quit();
-    }
+    }   
     m_LevelMap->Update();
+    for(auto it = heal.begin(); it != heal.end(); /* no increment here */) {
+        if((*it)->isToBeDestroyed()) {
+            it = heal.erase(it);
+        } else {
+            ++it;
+        }
+    }
     for(auto it = box.begin(); it != box.end(); /* no increment here */) {
         if((*it)->isToBeDestroyed()) {
             it = box.erase(it);
@@ -133,6 +160,11 @@ void Engine::Update() {
     for(auto t : coin) {
         t->Update(dt);
     }
+    for(auto t : heal) {
+        t->Update(dt);
+    }
+    portal_gate->Update(dt);
+    Mouse::getInstance()->Update();
     Camera::GetInstance()->Update(dt);
 }
 
@@ -163,6 +195,11 @@ void Engine::Render() {
     for(auto t : coin) {
         t->Draw();
     }
+    for(auto t : heal) {
+        t->Draw();
+    }
+    portal_gate->Draw();
+    Mouse::getInstance()->Draw();
     SDL_RenderPresent(m_Renderer);
 }
 

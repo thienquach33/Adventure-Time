@@ -38,6 +38,11 @@ class Sprites : public Character {
         virtual int getTurn() { return turn_play; }
         virtual void addEffect(Effect* attack_effect) { m_Effect = attack_effect; }
         virtual void addEnemy(std::vector<Monster*> enemy) { m_enemy = enemy; }
+        virtual void addHeal(std::vector<Item*> heal) { m_heal = heal; }    
+        virtual void addGateLevel(Object* portal_gate) { m_portal_gate = portal_gate; }
+        virtual void setType(int type) { m_type = type; }
+
+
 
         int attackStartTicks = 0;
     private :
@@ -58,11 +63,14 @@ class Sprites : public Character {
         bool m_dead;
         bool m_isPushing;
 
+        int m_type;
+
         Collider* m_Collider;
         Collider* m_Trap;
         std::vector<Object*> m_box;
-        std::vector<Item*> m_item;
+        std::vector<Item*> m_item, m_heal;
         std::vector<Monster*> m_enemy;
+        Object* m_portal_gate;
 
         Effect* m_Effect;
 

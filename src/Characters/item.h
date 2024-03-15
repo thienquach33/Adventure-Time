@@ -29,6 +29,8 @@ class Item : public Character {
 
         virtual void applydx(int dx) { this->dx = dx; }
         virtual void eat() { m_isEtten = true; }
+        virtual void setType(int type) { m_type = type; }
+        virtual void setCollider(int x, int y, int w, int h) { m_Collider->Set(x, y, w, h); }
 
         SDL_Rect getCollider() { return m_Collider->Get(); }
 
@@ -51,6 +53,7 @@ class Item : public Character {
         double m_AttackTime;
 
         int heal_of_box = 100;
+        int m_type;
 
         int dx = 0;
 

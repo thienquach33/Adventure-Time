@@ -17,6 +17,7 @@ class TextureManager
 
         void Draw(std::string id, double x, double y, int width, int height, int scale, SDL_RendererFlip flip=SDL_FLIP_NONE);
         void DrawTile(std::string tilesetID, int tileSize, int x, int y, int row, int frame, SDL_RendererFlip flip=SDL_FLIP_NONE);
+        void DrawMouse(std::string id, double x, double y, int width, int height, SDL_Rect);
 
     private:
         TextureManager(){};

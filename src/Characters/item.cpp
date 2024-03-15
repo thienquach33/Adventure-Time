@@ -40,11 +40,18 @@ void Item::SetAnimation(std::string animation_name, int num, int speed, int dela
 }
 
 void Item::Update(double dt) {
-    SetAnimation("sliver-coin", 4, 100, 0);
-    m_Collider->Set(m_Transform->X, m_Transform->Y, 16 * 5, 16 * 5);
+    if(m_type == 0) {
+        SetAnimation("sliver-coin", 4, 100, 0);
+        m_Collider->Set(m_Transform->X, m_Transform->Y, 16 * 5, 16 * 5);
 
-    if(m_isEtten) {
-        m_EatTimer += dt;
+        if(m_isEtten) {
+            m_EatTimer += dt;
+        }
+    }
+    else {
+        m_Transform->X = m_Collider->Get().x;
+        m_Transform->Y = m_Collider->Get().y;
+        SetAnimation("heal-full", 1, 100, 0);
     }
 
     AnimationState();
@@ -53,9 +60,17 @@ void Item::Update(double dt) {
 }
 
 void Item::AnimationState() {
-    if(m_isEtten) {
-        SetAnimation("coin-effect", 3, 200);
-        if(m_EatTimer >= 50.0f) {
+    if(m_type == 0) {
+        if(m_isEtten) {
+            SetAnimation("coin-effect", 3, 200);
+            if(m_EatTimer >= 50.0f) {
+                m_tobeDestroy = true;
+                m_isEtten = false;
+            }
+        }
+    }
+    else {
+        if(m_isEtten) {
             m_tobeDestroy = true;
             m_isEtten = false;
         }

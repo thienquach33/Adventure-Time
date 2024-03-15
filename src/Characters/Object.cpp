@@ -42,43 +42,48 @@ void Object::SetAnimation(std::string animation_name, int num, int speed, int de
 }
 
 void Object::Update(double dt) {
-    SetAnimation("box-idle", 1, 100, 0);
-    m_RigidBody->UnSetForce();
+    if(m_type == 0) {
+        SetAnimation("box-idle", 1, 100, 0);
+        m_RigidBody->UnSetForce();
 
-    m_RigidBody->ApplyForceX(dx * PUSH_FORCE);
+        m_RigidBody->ApplyForceX(dx * PUSH_FORCE);
 
-    m_RigidBody->Update(dt);
-    m_LastSafePosition.X = m_Transform->X;
-    m_Transform->X += m_RigidBody->Position().X;
-    m_Collider->Set(m_Transform->X, m_Transform->Y, 25 * 5, 17 * 5);
+        m_RigidBody->Update(dt);
+        m_LastSafePosition.X = m_Transform->X;
+        m_Transform->X += m_RigidBody->Position().X;
+        m_Collider->Set(m_Transform->X, m_Transform->Y, 25 * 5, 17 * 5);
 
-    if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
-        m_Transform->X = m_LastSafePosition.X;
-    }   
+        if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
+            m_Transform->X = m_LastSafePosition.X;
+        }   
 
 
-    m_RigidBody->Update(dt);
-    m_LastSafePosition.Y = m_Transform->Y;
-    m_Transform->Y += m_RigidBody->Position().Y;
-    m_Collider->Set(m_Transform->X, m_Transform->Y, 25 * 5, 17 * 5);
-
-    if(heal_of_box == 0) {
-        m_RigidBody->SetGravity(1.5f);
-        m_DestroyTimer += dt;
-        m_Collider->Set(m_Transform->X, m_Transform->Y, 15, 30);
+        m_RigidBody->Update(dt);
+        m_LastSafePosition.Y = m_Transform->Y;
         m_Transform->Y += m_RigidBody->Position().Y;
-    }
+        m_Collider->Set(m_Transform->X, m_Transform->Y, 25 * 5, 17 * 5);
 
-    if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
-        m_isGrounded = true;
-        m_Transform->Y = m_LastSafePosition.Y;
+        if(heal_of_box == 0) {
+            m_RigidBody->SetGravity(1.5f);
+            m_DestroyTimer += dt;
+            m_Collider->Set(m_Transform->X, m_Transform->Y, 15, 30);
+            m_Transform->Y += m_RigidBody->Position().Y;
+        }
+
+        if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
+            m_isGrounded = true;
+            m_Transform->Y = m_LastSafePosition.Y;
+        }
+        else {
+            m_isGrounded = false;
+        }
+
+        m_Origin->x = m_Transform->X + m_Width / 2;
+        m_Origin->y = m_Transform->Y + m_Height / 2;
     }
     else {
-        m_isGrounded = false;
+        SetAnimation("portal-gate", 6, 200, 0);
     }
-
-    m_Origin->x = m_Transform->X + m_Width / 2;
-    m_Origin->y = m_Transform->Y + m_Height / 2;
 
     AnimationState();
     m_Animation->Update();
@@ -86,16 +91,21 @@ void Object::Update(double dt) {
 }
 
 void Object::AnimationState() {
-    if(m_isHitting && heal_of_box >= 10) {
-        heal_of_box = std::max(heal_of_box - 10, 0);
-        SetAnimation("box-hit", 4, 100, 0);
-    }
-    if(heal_of_box <= 0) {
-        SetAnimation("box-destroy", 5, 200, 0);
-        m_scale = 2;
-        if(m_DestroyTimer >= 150.0f) {
-            m_tobeDestroy = true;
+    if(m_type == 0) {
+        if(m_isHitting && heal_of_box >= 10) {
+            heal_of_box = std::max(heal_of_box - 10, 0);
+            SetAnimation("box-hit", 4, 100, 0);
         }
+        if(heal_of_box <= 0) {
+            SetAnimation("box-destroy", 5, 200, 0);
+            m_scale = 2;
+            if(m_DestroyTimer >= 150.0f) {
+                m_tobeDestroy = true;
+            }
+        }
+    }
+    else {
+
     }
 }
 

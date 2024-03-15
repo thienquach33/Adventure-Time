@@ -85,6 +85,14 @@ void Sprites::Update(double dt) {
     m_isRunning = false;
     m_RigidBody->UnSetForce();
 
+    for(auto it = m_heal.begin(); it != m_heal.end(); /* no increment here */) {
+        if((*it)->isToBeDestroyed()) {
+            it = m_heal.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
     for(auto it = m_box.begin(); it != m_box.end(); /* no increment here */) {
         if((*it)->isToBeDestroyed()) {
             it = m_box.erase(it);
@@ -192,9 +200,9 @@ void Sprites::Update(double dt) {
     for(auto &t : m_enemy) {
         auto sword_collider = m_Collider->Get();
         if(m_Flip == SDL_FLIP_NONE)
-            sword_collider.w += 50;
+            sword_collider.w += 80;
         else 
-            sword_collider.x -= 50;
+            sword_collider.x -= 80;
         if(CollisionHandler::GetInstance()->checkCollision(sword_collider, t->getCollider()) && m_isAttacking) {
             t->setHit(true);
         }
@@ -246,6 +254,14 @@ void Sprites::Update(double dt) {
         m_DeadTime += dt;
     }
 
+    for(int i = 0; i < (int) m_heal.size(); i++) {
+        int diff;
+        if(m_heal.size() == 3) diff = 35;
+        else if(m_heal.size() == 2) diff = 75;
+        else diff = 120;
+        m_heal[i]->setCollider(m_Transform->X + diff + i * 80, m_Transform->Y - 60, 1, 1);
+    }
+
     m_Origin->x = m_Transform->X + m_Width / 2;
     m_Origin->y = m_Transform->Y + m_Height / 2;
 
@@ -274,7 +290,10 @@ void Sprites::AnimationState() {
         m_Effect->setAttack(false);
     }
     if(m_dead) {
-        if(m_DeadTime >= 100.0f) Respawn();
+        if(m_DeadTime >= 100.0f) {
+            Respawn();
+            if(!m_heal.empty()) m_heal.back()->eat();
+        }
         else {
             Mix_PlayChannel(-1, m_deadSound, 0);   
             SetAnimation("player-dead", 4, 150, 0);

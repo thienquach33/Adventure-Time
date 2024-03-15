@@ -26,8 +26,6 @@ bool MapParser::Parse(std::string id, std::string source)
     root->Attribute("height", &rowcount);
     root->Attribute("tilewidth", &tilesize);
 
-    std::cerr << colcount << " " << rowcount << " " << tilesize << "\n";
-
     // Parse Tile sets
     TilesetList tilesets;
     for ( TiXmlElement* e = root->FirstChildElement(); e != nullptr; e = e->NextSiblingElement() )

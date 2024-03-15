@@ -30,6 +30,12 @@ void TextureManager::DrawTile(std::string tilesetID, int tileSize, int x, int y,
     SDL_RenderCopyEx(Engine::GetInstance()->getRenderer(), m_TextureMap[tilesetID], &srcRect, &dstRect, 0, nullptr, flip);
 }
 
+void TextureManager::DrawMouse(std::string id, double x, double y, int width, int height, SDL_Rect rect)
+{
+    SDL_Rect srcRect = {x, y, width, height};
+    SDL_RenderCopy(Engine::GetInstance()->getRenderer(), m_TextureMap[id], &srcRect, &rect);
+}
+
 void TextureManager::Drop(std::string id)
 {
     SDL_DestroyTexture(m_TextureMap[id]);

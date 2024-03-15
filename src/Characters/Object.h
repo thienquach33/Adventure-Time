@@ -28,6 +28,7 @@ class Object : public Character {
         virtual void setHit(bool m_hit) { m_isHitting = m_hit; }
 
         virtual void applydx(int dx) { this->dx = dx; }
+        virtual void setType(int type) { m_type = type; }
 
         SDL_Rect getCollider() { return m_Collider->Get(); }
 
@@ -49,7 +50,7 @@ class Object : public Character {
         double m_AttackTime;
 
         int heal_of_box = 300;
-
+        int m_type;
         int dx = 0;
 
         bool m_isJumping;
