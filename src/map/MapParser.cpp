@@ -4,8 +4,8 @@ MapParser* MapParser::s_Instance = nullptr;
 
 bool MapParser::Load()
 {
-    if ( !Parse("LEVEL_1", "assets/maps/LEVEL_1_PLUS.tmx"))
-        return false;
+    if(cur_level == 1) Parse("LEVEL_1", "assets/maps/LEVEL_1_PLUS.tmx");
+    else if(cur_level == 2) Parse("LEVEL_2", "assets/maps/LEVEL2.tmx");
     return true;
 }
 

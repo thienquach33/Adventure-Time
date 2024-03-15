@@ -17,6 +17,8 @@ class Engine {
         bool Clean();
         void Quit();
 
+        void Init_Level(int level);
+
         void Update();
         void Render();
         void Events();
@@ -25,6 +27,11 @@ class Engine {
 
         inline bool isRunning() { return m_isRunning; }
         inline  SDL_Renderer* getRenderer() { return m_Renderer; }
+
+        int cur_level = 1;
+        bool loaded_level1 = false;
+        bool loaded_level2 = false;
+        bool loaded_level3 = false;
 
     private:
         Engine() {}

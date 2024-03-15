@@ -41,7 +41,7 @@ class Sprites : public Character {
         virtual void addHeal(std::vector<Item*> heal) { m_heal = heal; }    
         virtual void addGateLevel(Object* portal_gate) { m_portal_gate = portal_gate; }
         virtual void setType(int type) { m_type = type; }
-
+        virtual int getLevel() { return level_cur; }
 
 
         int attackStartTicks = 0;
@@ -53,6 +53,7 @@ class Sprites : public Character {
         double m_JumpForce;
         double m_AttackTime;
         double m_DeadTime;
+        double m_nextLevelTime;
         int turn_play;
 
         bool m_isJumping;
@@ -62,8 +63,10 @@ class Sprites : public Character {
         bool m_isAttacking;
         bool m_dead;
         bool m_isPushing;
+        bool m_nextLevel;
 
         int m_type;
+        int level_cur = 1;
 
         Collider* m_Collider;
         Collider* m_Trap;

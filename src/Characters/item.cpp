@@ -48,10 +48,18 @@ void Item::Update(double dt) {
             m_EatTimer += dt;
         }
     }
-    else {
+    else if(m_type == 1){
         m_Transform->X = m_Collider->Get().x;
         m_Transform->Y = m_Collider->Get().y;
         SetAnimation("heal-full", 1, 100, 0);
+    }
+    else if(m_type == 2) {
+        SetAnimation("gold-coin", 4, 100, 0);
+        m_Collider->Set(m_Transform->X, m_Transform->Y, 16 * 5, 16 * 5);
+
+        if(m_isEtten) {
+            m_EatTimer += dt;
+        }
     }
 
     AnimationState();
@@ -60,7 +68,7 @@ void Item::Update(double dt) {
 }
 
 void Item::AnimationState() {
-    if(m_type == 0) {
+    if(m_type == 0 || m_type == 2) {
         if(m_isEtten) {
             SetAnimation("coin-effect", 3, 200);
             if(m_EatTimer >= 50.0f) {

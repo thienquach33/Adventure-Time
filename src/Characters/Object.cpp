@@ -83,6 +83,7 @@ void Object::Update(double dt) {
     }
     else {
         SetAnimation("portal-gate", 6, 200, 0);
+        m_Collider->Set(m_Transform->X, m_Transform->Y, 20 * 10, 32 * 10);
     }
 
     AnimationState();

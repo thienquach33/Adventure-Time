@@ -254,6 +254,20 @@ void Sprites::Update(double dt) {
         m_DeadTime += dt;
     }
 
+    if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), m_portal_gate->getCollider())) {
+        m_nextLevelTime += dt;
+        m_nextLevel = true;
+        if(m_nextLevelTime >= 200.0f) {
+            m_nextLevel = false;
+            m_nextLevelTime = 0;
+            level_cur++;
+        }
+    }
+    else {
+        m_nextLevel = false;
+        m_nextLevelTime = 0;
+    }
+
     for(int i = 0; i < (int) m_heal.size(); i++) {
         int diff;
         if(m_heal.size() == 3) diff = 35;
@@ -298,6 +312,9 @@ void Sprites::AnimationState() {
             Mix_PlayChannel(-1, m_deadSound, 0);   
             SetAnimation("player-dead", 4, 150, 0);
         }
+    }
+    if(m_nextLevel) {
+        SetAnimation("player-next-level", 4, 150, 0);
     }
 }
 

@@ -16,6 +16,8 @@ class MapParser
         inline GameMap* GetMap(std::string id) { return m_MapDict[id]; }
         inline static MapParser* GetInstance() { return s_Instance = ( s_Instance != nullptr )? s_Instance : new MapParser(); }
 
+        void setLevel(int level) { cur_level = level; }
+
     private:
         bool Parse(std::string id, std::string source);
         Tileset ParseTileset(TiXmlElement* xmlTileset);
@@ -25,6 +27,7 @@ class MapParser
         MapParser() {}
         static MapParser* s_Instance;
         std::map<std::string, GameMap*> m_MapDict;
+        int cur_level = 1;
 };
 
 #endif  // MAPPARSER_H
