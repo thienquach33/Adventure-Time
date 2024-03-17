@@ -10,12 +10,20 @@ void Camera::Update(double dt) {
         if(m_ViewBox.x < 0) m_ViewBox.x = 0;
         if(m_ViewBox.y < 0) m_ViewBox.y = 0;
 
-        if(m_ViewBox.x > (2 * 2960 - m_ViewBox.w)) {
-            m_ViewBox.x = (2 * 2960 - m_ViewBox.w);
+        if(m_ViewBox.x > (2.03 * 2960 - m_ViewBox.w) && m_Targets->x <= 74 * 80) {
+            m_ViewBox.x = (2.03 * 2960 - m_ViewBox.w);
         }
 
-        if(m_ViewBox.y > (1790 - m_ViewBox.h)) {
-            m_ViewBox.y = 1790 - m_ViewBox.h;
+        if(m_ViewBox.x < 75 * 80 && m_Targets->x >= 77 * 80) {
+            m_ViewBox.x = 75 * 80;
+        }
+
+        if(m_ViewBox.x > (3.48 * 2960 - m_ViewBox.w) && m_Targets->x <= 129 * 80) {
+            m_ViewBox.x = (3.48 * 2960 - m_ViewBox.w);
+        }
+
+        if(m_ViewBox.y > (1790 - m_ViewBox.h - 30)) {
+            m_ViewBox.y = 1790 - m_ViewBox.h - 30;
         }
         m_Postision = Vector2D(m_ViewBox.x, m_ViewBox.y);
     }

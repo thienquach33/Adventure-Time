@@ -73,8 +73,8 @@ void Sprites::SetAnimation(std::string animation_name, int num, int speed, int d
 }
 
 void Sprites::Respawn(){
-    m_Transform->X = 600;
-    m_Transform->Y = 600;
+    m_Transform->X = 8 * 80;
+    m_Transform->Y = 15 * 80;
     m_dead = false;
     m_DeadTime = 0;
     ++turn_play;
@@ -85,29 +85,29 @@ void Sprites::Update(double dt) {
     m_isRunning = false;
     m_RigidBody->UnSetForce();
 
-    for(auto it = m_heal.begin(); it != m_heal.end(); /* no increment here */) {
-        if((*it)->isToBeDestroyed()) {
-            it = m_heal.erase(it);
-        } else {
-            ++it;
-        }
-    }
+    // for(auto it = m_heal.begin(); it != m_heal.end(); /* no increment here */) {
+    //     if((*it)->isToBeDestroyed()) {
+    //         it = m_heal.erase(it);
+    //     } else {
+    //         ++it;
+    //     }
+    // }
 
-    for(auto it = m_box.begin(); it != m_box.end(); /* no increment here */) {
-        if((*it)->isToBeDestroyed()) {
-            it = m_box.erase(it);
-        } else {
-            ++it;
-        }
-    }
+    // for(auto it = m_box.begin(); it != m_box.end(); /* no increment here */) {
+    //     if((*it)->isToBeDestroyed()) {
+    //         it = m_box.erase(it);
+    //     } else {
+    //         ++it;
+    //     }
+    // }
 
-    for(auto it = m_item.begin(); it != m_item.end(); /* no increment here */) {
-        if((*it)->isToBeDestroyed()) {
-            it = m_item.erase(it);
-        } else {
-            ++it;
-        }
-    }
+    // for(auto it = m_item.begin(); it != m_item.end(); /* no increment here */) {
+    //     if((*it)->isToBeDestroyed()) {
+    //         it = m_item.erase(it);
+    //     } else {
+    //         ++it;
+    //     }
+    // }
 
     int dx = 0;
     // running
@@ -239,14 +239,12 @@ void Sprites::Update(double dt) {
     }
 
     // check get coin
-
     for(auto &t : m_item) {
         if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getCollider())) {
             Mix_PlayChannel(-1, m_getCoinSound, 0);
             t->eat();
         }
     }
-
     // check game over
     if(TrapCollision::GetInstance()->checkTrapCollision(m_Collider->Get())) {
         m_Transform->Y = m_LastSafePosition.Y;
@@ -257,6 +255,8 @@ void Sprites::Update(double dt) {
     if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), m_portal_gate->getCollider())) {
         m_nextLevelTime += dt;
         m_nextLevel = true;
+        m_JumpForce = 22.0f;
+        m_RigidBody->SetGravity(5.0f);
         if(m_nextLevelTime >= 200.0f) {
             m_nextLevel = false;
             m_nextLevelTime = 0;

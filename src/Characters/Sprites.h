@@ -42,7 +42,7 @@ class Sprites : public Character {
         virtual void addGateLevel(Object* portal_gate) { m_portal_gate = portal_gate; }
         virtual void setType(int type) { m_type = type; }
         virtual int getLevel() { return level_cur; }
-
+        virtual void setSpawnPosition(int x, int y) { m_Transform->X = x; m_Transform->Y = y; }
 
         int attackStartTicks = 0;
     private :

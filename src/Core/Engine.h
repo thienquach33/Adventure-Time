@@ -28,10 +28,8 @@ class Engine {
         inline bool isRunning() { return m_isRunning; }
         inline  SDL_Renderer* getRenderer() { return m_Renderer; }
 
-        int cur_level = 1;
-        bool loaded_level1 = false;
-        bool loaded_level2 = false;
-        bool loaded_level3 = false;
+        int cur_level = 0;
+        std::vector<bool> loaded_level = {false, false, false};
 
     private:
         Engine() {}

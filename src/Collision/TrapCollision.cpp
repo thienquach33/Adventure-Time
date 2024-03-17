@@ -4,7 +4,7 @@
 TrapCollision* TrapCollision::s_Instance = nullptr;
 
 TrapCollision::TrapCollision() {
-    m_CollisionLayer = (TileLayer*) Engine::GetInstance()->GetMap()->GetMapLayers()[2];
+    m_CollisionLayer = (TileLayer*) Engine::GetInstance()->GetMap()->GetMapLayers().back();
     m_CollisionTilemap = m_CollisionLayer->GetTilemap();
 }
 
@@ -17,7 +17,7 @@ bool TrapCollision::checkCollision(SDL_Rect a, SDL_Rect b) {
 bool TrapCollision::mapCollision(SDL_Rect a) {
     int tileSize = 80;
     int rowCount = 22;
-    int colCount = 74;
+    int colCount = 222;
 
     int left_tile = a.x / tileSize;
     int right_tile = (a.x + a.w) / tileSize;

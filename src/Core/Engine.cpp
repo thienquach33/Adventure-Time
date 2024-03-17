@@ -27,29 +27,35 @@ std::vector<Object*> portal_gate;
 const int NUM_OF_HEAL = 3;
 
 std::vector<std::pair<int, int>> postision_box[3] = {
-     { {6, 15}, {15, 15}, {34, 10}, {48, 13} },
-     { {6, 15}, {15, 15}, {34, 10}, {48, 13} },
-     { {6, 15}, {15, 15}, {34, 10}, {48, 13} }
+     { {6, 15}, {15, 15} },
+     {  },
+     { }
 };
 std::vector<std::pair<int, int>> sliver_postision_item[3] = {
     { {9, 15}, {11 , 15}, {13, 17}, {22, 14}, {28, 14}, {35, 12}, {48, 15}, {55, 13}, {67, 7}},
-    { {9, 15}, {11 , 15}, {13, 17}, {22, 14}, {28, 14}, {35, 12}, {48, 15}, {55, 13}, {67, 7}},
-    { {9, 15}, {11 , 15}, {13, 17}, {22, 14}, {28, 14}, {35, 12}, {48, 15}, {55, 13}, {67, 7}}
+    { },
+    { }
 };
 std::vector<std::pair<int, int>> enemy_postision[3] = {
-    { {22, 10}, {19, 16}, {47, 14}},
-    { {22, 10}, {19, 16}, {47, 14}},
-    { {22, 10}, {19, 16}, {47, 14}}
+    {},
+    { },
+    { }
 };
 std::vector<std::pair<int, int>> gold_postision_item[3] = {
     { {2, 16} , {31, 16}, {69, 6}, {40, 16}},
-    { {2, 16} , {31, 16}, {69, 6}, {40, 16}},
-    { {2, 16} , {31, 16}, {69, 6}, {40, 16}}
+    { },
+    { }
 };
 std::vector<std::pair<int, int>> portal_gate_postision[3] = {
     { {69, 9} },
-    { {69, 9} },
-    { {69, 9} } 
+    {  },
+    {  } 
+};
+
+std::vector<std::pair<int, int>> teleport_gate[3] = {
+    {},
+    {},
+    {}
 };
 
 bool Engine::Init() {
@@ -66,7 +72,7 @@ bool Engine::Init() {
     gameOver = Mix_LoadWAV("assets/sounds/round_end.wav");
 
     // create player
-    player = new Sprites(new Properties("player-idle", 600, 600, 64, 40, 5));
+    player = new Sprites(new Properties("player-idle", 8 * 80, 15 * 80, 64, 40, 5));
     player->Load("player-idle", "assets/player/Idle/Idle Sword", 5);
     player->Load("player-attack", "assets/player/Player_Attack/Attack", 3);
     player->Load("player-run", "assets/player/Run/Run Sword", 6);
@@ -91,16 +97,19 @@ bool Engine::Init() {
     player->addEffect(player_attack_effected);
     player->addHeal(heal);
 
+    // map create
+    MapParser::GetInstance()->Load();
+    m_LevelMap = MapParser::GetInstance()->GetMap("GAME_MAP");
+
     Mouse::getInstance()->Load("mouse", "assets/inputs/slick_arrow-arrow.png");
 
     return m_isRunning = true;
 }
 
 void Engine::Init_Level(int level) {
-    // map insert
-    std::string level_name = "LEVEL_" + std::to_string(level);
-    MapParser::GetInstance()->Load();
-    m_LevelMap = MapParser::GetInstance()->GetMap(level_name);
+    // if(level == 2) {
+    //     player->setSpawnPosition(4 * 80, 16 * 80);
+    // }
 
     // create box
     box.clear();
@@ -162,18 +171,13 @@ void Engine::Init_Level(int level) {
 }
 
 void Engine::Update() {
-    if(player->getLevel() == 1 && !loaded_level1){
-        Init_Level(1);
-        loaded_level1 = true;
+    for(int LEVEL = 1; LEVEL <= 3; LEVEL++) {
+        if(player->getLevel() == LEVEL && !loaded_level[LEVEL - 1]) {
+            Init_Level(LEVEL);
+            loaded_level[LEVEL - 1] = true;
+            cur_level = LEVEL;
+        }
     }
-    // if(player->getLevel() == 2 && !loaded_level2){
-    //     Init_Level_2();
-    //     loaded_level2 = true;
-    // }
-    // if(player->getLevel() == 3 && !loaded_level3){
-    //     Init_Level_3();
-    //     loaded_level3 = true;
-    // }
     double dt = Timer::getInstance()->getDeltaTime();
     player->Update(dt);
     player_attack_effected->Update(dt);
@@ -226,6 +230,7 @@ bool Engine::Clean() {
     TextureManager::GetInstance()->Clean();
     SDL_DestroyWindow(m_Window);
     SDL_DestroyRenderer(m_Renderer);
+    MapParser::GetInstance()->Clean();
     IMG_Quit();
     Mix_FreeChunk(gameMusic);
     Mix_FreeChunk(gameOver);
