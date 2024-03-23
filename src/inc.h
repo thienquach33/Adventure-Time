@@ -19,4 +19,7 @@
 #include "Collision/CollisionHandler.cpp"
 #include "Collision/TrapCollision.cpp"
 #include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_ttf.h>
 #include "Inputs/Mouse.cpp"
+#include "Inputs/Button.cpp"
+#include "Characters/Decor.cpp"

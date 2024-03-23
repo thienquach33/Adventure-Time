@@ -8,7 +8,7 @@
 
 struct Properties {
     public :
-        Properties(std::string textureID, int x, int y, int width, int height, int sc, SDL_RendererFlip flip = SDL_FLIP_NONE) {
+        Properties(std::string textureID, int x, int y, int width, int height, double sc, SDL_RendererFlip flip = SDL_FLIP_NONE) {
             X = x;
             Y = y;
             Flip = flip;
@@ -20,8 +20,7 @@ struct Properties {
     public :
         std::string TextureID, path;
         int Width, Height;
-        double X, Y;
-        int scale;
+        double X, Y, scale;
         SDL_RendererFlip Flip;
 };
 
@@ -45,7 +44,8 @@ class GameObject : public IObject{
     protected : 
         Point* m_Origin;
         Transform* m_Transform;
-        int m_Width, m_Height, m_scale;
+        int m_Width, m_Height;
+        double m_scale;
         std::string m_TextureID;
         SDL_RendererFlip m_Flip;
 };

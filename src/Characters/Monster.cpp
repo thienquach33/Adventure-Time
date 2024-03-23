@@ -18,7 +18,6 @@ Monster::Monster(Properties* props) : Character(props) {
     m_isAttacking = false;
     m_dead = false;
 
-    m_Flip = SDL_FLIP_NONE;
     m_JumpTime = JUMP_TIME;
     m_JumpForce = JUMP_FORCE;
     m_AttackTime = ATTACK_TIME;
@@ -39,10 +38,10 @@ void Monster::Draw() {
     m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
 
     Vector2D cam = Camera::GetInstance()->GetPostision();
-    SDL_Rect box = m_Collider->Get();
-    box.x -= cam.X;
-    box.y -= cam.Y;
-    SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
+    // SDL_Rect box = m_Collider->Get();
+    // box.x -= cam.X;
+    // box.y -= cam.Y;
+    // SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
 }
 
 void Monster::Load(std::string name_animation, std::string path_animation, int num, SDL_RendererFlip flip) {
@@ -75,52 +74,88 @@ void Monster::Respawn(){
 }
 
 void Monster::Update(double dt) {
-    SetAnimation("enemy-idle", 8, 100, 0);
-    m_isRunning = false;
-    m_RigidBody->UnSetForce();
+    if(type == 0) {
+        SetAnimation("enemy-idle", 8, 100, 0);
+        m_isRunning = false;
+        m_RigidBody->UnSetForce();
 
-    if(!m_isFalling && !m_isAttacking && !m_dead && heal_of_enemy > 0) {
+        if(!m_isFalling && !m_dead && !m_isHitting && heal_of_enemy > 0) {
 
-        switch(m_State) {
-            case State::MovingLeft:
-                m_isRunning = true;
-                m_RigidBody->ApplyForceX(FORWARD * 2.0f); // Adjust the force as needed
-                m_MoveTime += dt;
-                if(m_MoveTime >= 70.0f) { // Adjust the time as needed
-                    m_State = State::IdleLeft;
-                    m_MoveTime = 0.0;
-                    m_Flip = SDL_FLIP_HORIZONTAL;
-                }
-                break;
-            case State::MovingRight:
-                m_isRunning = true;
-                m_RigidBody->ApplyForceX(BACKWARD * 2.0f); // Adjust the force as needed
-                m_MoveTime += dt;
-                if(m_MoveTime >= 70.0f) { // Adjust the time as needed
-                    m_State = State::IdleRight;
-                    m_MoveTime = 0.0;
-                    m_Flip = SDL_FLIP_NONE;
-                }
-                break;
-            case State::IdleLeft:
-                m_IdleTime += dt;
-                if(m_IdleTime >= 80.0f) { // Adjust the time as needed
-                    m_State = State::MovingRight;
-                    m_IdleTime = 0.0;
-                }
-                break;
-            case State::IdleRight:
-                m_IdleTime += dt;
-                if(m_IdleTime >= 80.0f) { // Adjust the time as needed
-                    m_State = State::MovingLeft;
-                    m_IdleTime = 0.0;
-                }
-                break;
+            switch(m_State) {
+                case State::MovingLeft:
+                    m_isRunning = true;
+                    m_RigidBody->ApplyForceX(FORWARD * 2.0f); // Adjust the force as needed
+                    m_MoveTime += dt;
+                    if(m_MoveTime >= 70.0f) { // Adjust the time as needed
+                        m_State = State::IdleLeft;
+                        m_MoveTime = 0.0;
+                        m_Flip = SDL_FLIP_HORIZONTAL;
+                    }
+                    break;
+                case State::MovingRight:
+                    m_isRunning = true;
+                    m_RigidBody->ApplyForceX(BACKWARD * 2.0f); // Adjust the force as needed
+                    m_MoveTime += dt;
+                    if(m_MoveTime >= 70.0f) { // Adjust the time as needed
+                        m_State = State::IdleRight;
+                        m_MoveTime = 0.0;
+                        m_Flip = SDL_FLIP_NONE;
+                    }
+                    break;
+                case State::IdleLeft:
+                    m_IdleTime += dt;
+                    if(m_IdleTime >= 80.0f) { // Adjust the time as needed
+                        m_State = State::Attacking_left;
+                        m_IdleTime = 0.0;
+                    }
+                    break;
+                case State::IdleRight:
+                    m_IdleTime += dt;
+                    if(m_IdleTime >= 80.0f) { // Adjust the time as needed
+                        m_State = State::Attacking_right;
+                        m_IdleTime = 0.0;
+                    }
+                    break;
+                case State::Attacking_left :
+                    m_isAttacking = true;
+                    m_timeAttack += dt;
+                    if(m_timeAttack >= 80.0f) {
+                        m_isAttacking = false;
+                        m_timeAttack = 0;
+                    }
+                    if(m_isAttacking && m_AttackTime > 0) {
+                        m_AttackTime -= dt;
+                    }
+                    else {
+                        m_isAttacking = false;
+                        m_AttackTime = ATTACK_TIME;
+                        m_State = State::MovingRight;
+                    }
+                    break;
+                case State::Attacking_right :
+                    m_isAttacking = true;
+                    m_timeAttack += dt;
+                    if(m_timeAttack >= 80.0f) {
+                        m_isAttacking = false;
+                        m_timeAttack = 0;
+                    }
+                    if(m_isAttacking && m_AttackTime > 0) {
+                        m_AttackTime -= dt;
+                    }
+                    else {
+                        m_isAttacking = false;
+                        m_AttackTime = ATTACK_TIME;
+                        m_State = State::MovingLeft;
+                    }
+                    break;
+            }
         }
     }
-
+    else if(type == 1) {
+    
+    }
     if(m_RigidBody->Velocity().Y > 0 && !m_isGrounded) m_isFalling = true;
-    else m_isFalling = false;
+        else m_isFalling = false;
 
     // move_x
     m_RigidBody->Update(dt);
@@ -152,29 +187,53 @@ void Monster::Update(double dt) {
     m_Origin->x = m_Transform->X + m_Width / 2;
     m_Origin->y = m_Transform->Y + m_Height / 2;
 
-    AnimationState();
+    AnimationState(dt);
     m_Animation->Update();
 }
 
-void Monster::AnimationState() {
-    if(m_isRunning) {
-        SetAnimation("enemy-run", 6, 100, 0);
-    }
-    if(m_isHitting) {
-        if(heal_of_enemy >= 10) {
-            heal_of_enemy = std::max(heal_of_enemy - 10, 0);
-            int cur = SDL_GetTicks();
-            SetAnimation("enemy-hit", 4, 200, cur);
+void Monster::AnimationState(double dt) {
+    if(type == 0) {
+        if(m_isRunning) {
+            SetAnimation("enemy-run", 6, 100, 0);
         }
-    }
-    if(heal_of_enemy == 0) {
-        if(m_DeadTime >= 200.0f) {
-            m_tobeDestroy = true;
-            SetAnimation("enemy-deaded", 4, 200, 0);    
+        if(m_isHitting) {
+            if(heal_of_enemy >= 10) {
+                heal_of_enemy = std::max(heal_of_enemy - 10, 0);
+                int cur = SDL_GetTicks();
+                SetAnimation("enemy-hit", 4, 200, cur);
+            }
+        }
+        if(m_isAttacking) {
+            if(attackStartTicks == 0) {
+                attackStartTicks = SDL_GetTicks();
+            }
+            SetAnimation("enemy-attack", 4, 150, attackStartTicks);
+            for(auto t : m_Effect) {
+                if(t->getName() == "crab-attack-effected") {
+                    t->SetAnimation("crab-attack-effected", m_Transform->X - 80, m_Transform->Y + 50, 3, 180, attackStartTicks, m_Flip);
+                    t->setAttack(true);
+                    t->Update(dt);
+                }
+            }
         }
         else {
-            SetAnimation("enemy-dead", 4, 200, 0);
+            for(auto t : m_Effect) {
+                t->setAttack(false);
+            }
+            attackStartTicks = 0;
         }
+        if(heal_of_enemy == 0) {
+            if(m_DeadTime >= 200.0f) {
+                m_tobeDestroy = true;
+                SetAnimation("enemy-deaded", 4, 200, 0);    
+            }
+            else {
+                SetAnimation("enemy-dead", 4, 200, 0);
+            }
+        }
+    }
+    else if(type == 1) {
+
     }
 }
 

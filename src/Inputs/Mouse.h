@@ -3,6 +3,8 @@
 
 #include <SDL2/SDL.h>
 #include "../Graphics/TextureManager.h"
+#include "../Core/Engine.h"
+#include "../Camera/Camera.h"
 
 class Mouse {
     public :
@@ -10,6 +12,12 @@ class Mouse {
         virtual void Load(std::string id, std::string path);
         virtual void Draw();
         virtual void Update();
+
+        SDL_Rect getPoint() { return point; }
+
+        bool isClicked() {
+            return SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT);
+        }
     private : 
         Mouse();
         SDL_Rect srect, point;

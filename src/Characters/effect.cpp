@@ -12,18 +12,20 @@ Effect::Effect(Properties* props) : Character(props) {
     m_Collider = new Collider();
     m_Collider->SetBuffer(0, 0, 0, 0);
     
+    name_effect = props->TextureID;
+
     m_Animation = new Animation();
 }
 
 void Effect::Draw() {
     if(m_isAttacking) {
-        m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, 3, m_Flip);
+        m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
 
         Vector2D cam = Camera::GetInstance()->GetPostision();
-        SDL_Rect box = m_Collider->Get();
-        box.x -= cam.X;
-        box.y -= cam.Y;
-        SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
+        // SDL_Rect box = m_Collider->Get();
+        // box.x -= cam.X;
+        // box.y -= cam.Y;
+        // SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
     }
 }
 
@@ -44,7 +46,13 @@ void Effect::SetAnimation(std::string animation_name, int x, int y, int num, int
 }
 
 void Effect::Update(double dt) {
-    SetAnimation("player-attack-effect", m_Transform->X, m_Transform->Y, 3, 100, 0, m_Flip);
+    if(m_isAttacking && m_AttackTime > 0) {
+        m_AttackTime -= dt;
+    }
+    else {
+        m_isAttacking = false;
+        m_AttackTime = ATTACK_TIME;
+    }
     m_Collider->Set(m_Transform->X, m_Transform->Y, 25 * 5, 17 * 5);
     m_Animation->Update();
 }

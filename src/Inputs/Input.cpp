@@ -10,6 +10,8 @@ Input::Input() {
 void Input::Listen() {
     SDL_Event event;
 
+    
+
     while(SDL_PollEvent(&event)) {
         switch (event.type)
         {

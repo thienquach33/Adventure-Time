@@ -24,11 +24,19 @@ class Object : public Character {
         virtual void Clean();
         virtual void Load(std::string name_animation, std::string path_animation, int num, SDL_RendererFlip flip = SDL_FLIP_NONE);
         virtual void SetAnimation(std::string animation_name, int num, int speed, int delay_attack = 0);
-        virtual void AnimationState();
+        virtual void AnimationState(double dt);
         virtual void setHit(bool m_hit) { m_isHitting = m_hit; }
 
         virtual void applydx(int dx) { this->dx = dx; }
         virtual void setType(int type) { m_type = type; }
+        void setDestroy(bool destroy) { m_tobeDestroy = destroy; }
+        void respawn(double x, double y) { m_Transform->X = x; m_Transform->Y = y; }
+        void addExploration(Object* explore) { this->explore = explore; }
+        void setExploring(bool exploring) { m_exploring = exploring; }
+        bool getExploring() { return m_exploring; }
+        bool isFalling() { return m_isFalling; }
+        void active(bool uuui) { active_bomb = uuui; }
+        Object* getExploration() { return explore; }
 
         SDL_Rect getCollider() { return m_Collider->Get(); }
 
@@ -58,9 +66,13 @@ class Object : public Character {
         bool m_isFalling;
         bool m_isRunning;
         bool m_isHitting;
+        bool m_exploring = false;
         bool m_dead;
+        bool active_bomb = false;
 
         Collider* m_Collider;
+
+        Object* explore;
 
         Vector2D m_LastSafePosition;
 };

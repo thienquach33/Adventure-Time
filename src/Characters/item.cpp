@@ -20,10 +20,10 @@ void Item::Draw() {
     m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
 
     Vector2D cam = Camera::GetInstance()->GetPostision();
-    SDL_Rect box = m_Collider->Get();
-    box.x -= cam.X;
-    box.y -= cam.Y;
-    SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
+    // SDL_Rect box = m_Collider->Get();
+    // box.x -= cam.X;
+    // box.y -= cam.Y;
+    // SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
 }
 
 void Item::Load(std::string name_animation, std::string path_animation, int num, SDL_RendererFlip flip) {
@@ -60,6 +60,19 @@ void Item::Update(double dt) {
         if(m_isEtten) {
             m_EatTimer += dt;
         }
+    }
+    else if(m_type == 3) {
+        m_Transform->X = m_Collider->Get().x;
+        m_Transform->Y = m_Collider->Get().y;
+        SetAnimation("health-bar", 1, 100, 0);
+    }
+    else if(m_type == 4) {
+        SetAnimation("key-level", 10, 100, 0);
+        m_Collider->Set(m_Transform->X, m_Transform->Y, 30 * 5, 30 * 5);
+    }
+    else if(m_type == 5) {
+        SetAnimation("sword", 8, 100);
+        m_Collider->Set(m_Transform->X, m_Transform->Y, m_Width * m_scale, m_Height * m_scale);
     }
 
     AnimationState();

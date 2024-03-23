@@ -25,10 +25,18 @@ class Effect : public Character {
         virtual void SetAnimation(std::string animation_name, int x, int y, int num, int speed, int delay_attack, SDL_RendererFlip flip);   
         virtual void AnimationState();
         virtual void setAttack(bool attack) { m_isAttacking = attack; }
+        bool getAttack() { return m_isAttacking; }
+        double getAttackTime() { return m_AttackTime; }
+        bool applyAttackTime() { return m_AttackTime = ATTACK_TIME; }
+        std::string getName() { return name_effect; }
+        void updateAttackTime(double dt) { m_AttackTime -= dt; }
     private :
         Animation* m_Animation;
 
         bool m_isAttacking = false;
+        double m_AttackTime;
+
+        std::string name_effect;
 
         Collider* m_Collider;
 };

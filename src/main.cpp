@@ -1,7 +1,6 @@
 #include "inc.h"
 
 int main() {
-    
     Engine::GetInstance()->Init();
 
     while(Engine::GetInstance()->isRunning()) {

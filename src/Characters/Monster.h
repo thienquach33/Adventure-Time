@@ -8,6 +8,7 @@
 #include "Object.h"
 #include "item.h"
 #include <SDL2/SDL_mixer.h>
+#include "effect.h"
 
 #define JUMP_TIME 15.0f
 #define JUMP_FORCE 13.0f
@@ -27,13 +28,17 @@ class Monster : public Character {
         virtual void Clean();
         virtual void Load(std::string name_animation, std::string path_animation, int num, SDL_RendererFlip flip = SDL_FLIP_NONE);
         virtual void SetAnimation(std::string animation_name, int num, int speed, int delay_attack = 0);
-        virtual void AnimationState();
-        inline int getAttack() { return m_isAttacking; }
+        virtual void AnimationState(double dt);
+        inline bool getAttack() { return m_isAttacking; }
         virtual void addBox(std::vector<Object*> box) { m_box = box; }
         virtual void addItem(std::vector<Item*> item) { m_item = item; }    
         virtual Mix_Chunk* LoadSound(const std::string& path);
         virtual void Respawn();
         virtual int getTurn() { return turn_play; }
+        void addEffect(std::vector<Effect*> attack_effect) { m_Effect = attack_effect; }
+        void setType(int type) { this->type = type; }
+        void addBall(Object* ball) { m_ball = ball; }
+        Object* getBall() { return m_ball; }
 
         int attackStartTicks = 0;
 
@@ -49,7 +54,9 @@ class Monster : public Character {
             MovingLeft,
             MovingRight,
             IdleLeft,
-            IdleRight
+            IdleRight,
+            Attacking_left,
+            Attacking_right,
         };
 
         State m_State = State::MovingLeft;
@@ -63,7 +70,9 @@ class Monster : public Character {
         double m_JumpForce;
         double m_AttackTime;
         double m_DeadTime;
-        int turn_play;
+        double m_timeAttack = 0, m_recall = 0;
+        double m_fire = 0;
+        int turn_play, type;
 
         bool m_isJumping;
         bool m_isGrounded;
@@ -76,11 +85,15 @@ class Monster : public Character {
         bool m_isHitting = false;
 
         int heal_of_enemy = 500;
+        int m_AttackCount = 0;
 
+        std::vector<Effect*> m_Effect;
         Collider* m_Collider;
         Collider* m_Trap;
         std::vector<Object*> m_box;
+        Object* m_ball;
         std::vector<Item*> m_item;
+        
 
         Vector2D m_LastSafePosition;
         Vector2D m_lastSafePostion2;

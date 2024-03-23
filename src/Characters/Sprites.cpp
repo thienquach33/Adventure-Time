@@ -15,7 +15,7 @@ Sprites::Sprites(Properties* props) : Character(props) {
     m_isRunning = false;
     m_isFalling = false;
     m_isGrounded = false;
-    m_isAttacking = false;
+    m_isAttacking = 0;
     m_dead = false;
 
     m_Flip = SDL_FLIP_NONE;
@@ -45,10 +45,10 @@ Sprites::Sprites(Properties* props) : Character(props) {
 void Sprites::Draw() {
     m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
     Vector2D cam = Camera::GetInstance()->GetPostision();
-    SDL_Rect box = m_Collider->Get();
-    box.x -= cam.X;
-    box.y -= cam.Y;
-    SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
+    // SDL_Rect box = m_Collider->Get();
+    // box.x -= cam.X;
+    // box.y -= cam.Y;
+    // SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
 }
 
 void Sprites::Load(std::string name_animation, std::string path_animation, int num, SDL_RendererFlip flip) {
@@ -81,33 +81,43 @@ void Sprites::Respawn(){
 }
 
 void Sprites::Update(double dt) {
-    SetAnimation("player-idle", 5, 100, 0);
+    if(haveSword)
+        SetAnimation("player-idle-sw", 5, 100, 0);
+    else 
+        SetAnimation("player-idle", 5, 100, 0);
+
     m_isRunning = false;
     m_RigidBody->UnSetForce();
 
-    // for(auto it = m_heal.begin(); it != m_heal.end(); /* no increment here */) {
-    //     if((*it)->isToBeDestroyed()) {
-    //         it = m_heal.erase(it);
-    //     } else {
-    //         ++it;
-    //     }
-    // }
+    m_wasGrounded = m_isGrounded;
 
-    // for(auto it = m_box.begin(); it != m_box.end(); /* no increment here */) {
-    //     if((*it)->isToBeDestroyed()) {
-    //         it = m_box.erase(it);
-    //     } else {
-    //         ++it;
-    //     }
-    // }
+    if(m_Transform->X >= 28 * 80 && m_Transform->X <= 30 * 80) {
+        m_JumpForce = 13.0f;
+    }
 
-    // for(auto it = m_item.begin(); it != m_item.end(); /* no increment here */) {
-    //     if((*it)->isToBeDestroyed()) {
-    //         it = m_item.erase(it);
-    //     } else {
-    //         ++it;
-    //     }
-    // }
+    for(auto it = m_heal.begin(); it != m_heal.end(); /* no increment here */) {
+        if((*it)->isToBeDestroyed()) {
+            it = m_heal.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    for(auto it = m_box.begin(); it != m_box.end(); /* no increment here */) {
+        if((*it)->isToBeDestroyed()) {
+            it = m_box.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    for(auto it = m_item.begin(); it != m_item.end(); /* no increment here */) {
+        if((*it)->isToBeDestroyed()) {
+            it = m_item.erase(it);
+        } else {
+            ++it;
+        }
+    }
 
     int dx = 0;
     // running
@@ -127,10 +137,26 @@ void Sprites::Update(double dt) {
         dx = BACKWARD;
     }
 
+    // falling
+    if(m_RigidBody->Velocity().Y > 0 && !m_isGrounded) m_isFalling = true;
+    else m_isFalling = false;
+
     // attacking
-    if(Input::getInstance()->getKeyDown(SDL_SCANCODE_J)) {
+    if(!m_isFalling && Input::getInstance()->getKeyDown(SDL_SCANCODE_J)) {
         m_RigidBody->UnSetForce();
-        m_isAttacking = true;
+        m_isAttacking = 1;
+    }
+    if(!m_isFalling && Input::getInstance()->getKeyDown(SDL_SCANCODE_K)) {
+        m_RigidBody->UnSetForce();
+        m_isAttacking = 2;
+    }
+    if(!m_isFalling && Input::getInstance()->getKeyDown(SDL_SCANCODE_L)) {
+        m_RigidBody->UnSetForce();
+        m_isAttacking = 3;
+    }
+    if(!m_isFalling && Input::getInstance()->getKeyDown(SDL_SCANCODE_R)) {
+        m_RigidBody->UnSetForce();
+        m_isAttacking = 4;
     }
 
     // jumping
@@ -149,10 +175,6 @@ void Sprites::Update(double dt) {
         m_JumpTime = JUMP_TIME;
     }
     m_RigidBody->Update(dt);
-    
-    // falling
-    if(m_RigidBody->Velocity().Y > 0 && !m_isGrounded) m_isFalling = true;
-    else m_isFalling = false;
 
     // fix attack
     if(m_isAttacking && m_AttackTime > 0) {
@@ -164,6 +186,20 @@ void Sprites::Update(double dt) {
     }
 
     bool ok = false;
+    bool above = false;
+
+    if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), ship->getCollider())) {
+        if(!CollisionHandler::GetInstance()->mapCollision(ship->getCollider())) {
+            m_RigidBody->ApplyForceX(2.0f);
+            ship->applydx(run_speed);
+        }
+        m_Transform->Y = m_LastSafePosition.Y;
+        m_isGrounded = true;
+        above = true;
+    }
+    else {
+        ship->applydx(0);
+    }
 
     // move_x
     m_RigidBody->Update(dt);
@@ -203,6 +239,13 @@ void Sprites::Update(double dt) {
             sword_collider.w += 80;
         else 
             sword_collider.x -= 80;
+        auto crab_attack = t->getCollider();
+        crab_attack.x -= 80;
+        crab_attack.w += 280;
+        if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), crab_attack) && (t->getAttack() == true)) {
+            m_dead = true;
+            break;
+        }
         if(CollisionHandler::GetInstance()->checkCollision(sword_collider, t->getCollider()) && m_isAttacking) {
             t->setHit(true);
         }
@@ -211,45 +254,65 @@ void Sprites::Update(double dt) {
         }
     }
 
-    if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
-        m_Transform->X = m_LastSafePosition.X;
+    if(!bomb->isFalling() && m_recall >= 300.0f) {
+        bomb->active(true);
+        bomb->respawn(m_Transform->X - 100, m_Transform->Y - 500);
+        m_recall = 0;
     }
+    m_recall += dt;
+    bomb->active(false);
 
-    m_RigidBody->Update(dt);
-    m_LastSafePosition.Y = m_Transform->Y;
-    m_Transform->Y += m_RigidBody->Position().Y;
-    m_Collider->Set(m_Transform->X + 22 * 5, m_Transform->Y + 3 * 5, 100, 130);
-
-    bool above = false;
-
-    for(auto &t : m_box) {
-        if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getCollider())) {
-            m_Transform->Y = m_LastSafePosition.Y;
-            m_isGrounded = true;
-            above = true;
-        }
-    }
-
-    if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
-        m_isGrounded = true;
-        m_Transform->Y = m_LastSafePosition.Y;
-    }
-    else if(!above) {
-        m_isGrounded = false;
-    }
-
-    // check get coin
-    for(auto &t : m_item) {
-        if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getCollider())) {
-            Mix_PlayChannel(-1, m_getCoinSound, 0);
-            t->eat();
-        }
-    }
-    // check game over
-    if(TrapCollision::GetInstance()->checkTrapCollision(m_Collider->Get())) {
-        m_Transform->Y = m_LastSafePosition.Y;
+    if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), bomb->getExploration()->getCollider())
+    && bomb->getExploration()->getExploring()) {
         m_dead = true;
-        m_DeadTime += dt;
+    }
+
+    if(!m_dead) {
+
+        if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
+            m_Transform->X = m_LastSafePosition.X;
+        }
+
+        m_RigidBody->Update(dt);
+        m_LastSafePosition.Y = m_Transform->Y;
+        m_Transform->Y += m_RigidBody->Position().Y;
+        m_Collider->Set(m_Transform->X + 22 * 5, m_Transform->Y + 3 * 5, 100, 130);
+
+        for(auto &t : m_box) {
+            if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getCollider())) {
+                m_Transform->Y = m_LastSafePosition.Y;
+                m_isGrounded = true;
+                above = true;
+            }
+        }
+
+
+        if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
+            m_isGrounded = true;
+            m_Transform->Y = m_LastSafePosition.Y;
+        }
+        else if(!above) {
+            m_isGrounded = false;
+        }
+
+        // check get coin
+        for(auto &t : m_item) {
+            if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getCollider())) {
+                Mix_PlayChannel(-1, m_getCoinSound, 0);
+                t->eat();
+            }
+        }
+
+        if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), m_sword->getCollider())) {
+            haveSword = true;
+            m_sword->eat();
+        }
+
+        // check game over
+        if(TrapCollision::GetInstance()->checkTrapCollision(m_Collider->Get())) {
+            m_Transform->Y = m_LastSafePosition.Y;
+            m_dead = true;
+        }
     }
 
     if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), m_portal_gate->getCollider())) {
@@ -268,53 +331,103 @@ void Sprites::Update(double dt) {
         m_nextLevelTime = 0;
     }
 
-    for(int i = 0; i < (int) m_heal.size(); i++) {
-        int diff;
-        if(m_heal.size() == 3) diff = 35;
-        else if(m_heal.size() == 2) diff = 75;
-        else diff = 120;
-        m_heal[i]->setCollider(m_Transform->X + diff + i * 80, m_Transform->Y - 60, 1, 1);
+
+    if(level_cur == 1) {
+
+        double health_bar_pos = std::max((double) 45, m_Transform->X - 1400);
+        health_bar_pos = std::min(health_bar_pos, (double) 3100);
+
+        health_bar->setCollider(health_bar_pos, 30, 1, 1);
+    
+        for(int i = 0; i < (int) m_heal.size(); i++) {
+            m_heal[i]->setCollider(health_bar_pos + 120 + 80 * i, 96, 1, 1);
+        }
     }
 
     m_Origin->x = m_Transform->X + m_Width / 2;
     m_Origin->y = m_Transform->Y + m_Height / 2;
 
-    AnimationState();
+    AnimationState(dt);
     m_Animation->Update();
 }
 
-void Sprites::AnimationState() {
-    SetAnimation("player-idle", 5, 100, 0);
-
-    if(m_isRunning) 
-        SetAnimation("player-run", 6, 100, 0);
-    if(m_isJumping)
-        SetAnimation("player-jump", 3, 60, 0);
-    if(m_isAttacking) {
-        if(attackStartTicks == 0) {
-            attackStartTicks = SDL_GetTicks();
-        }
-        SetAnimation("player-attack", 3, 150, attackStartTicks);
-        int diff = (m_Flip == SDL_FLIP_NONE) ? 200 : -50;
-        m_Effect->setAttack(true);
-        m_Effect->SetAnimation("player-attack-effect", m_Transform->X + diff, m_Transform->Y, 3, 200, attackStartTicks, m_Flip);
-    }
-    else {
-        attackStartTicks = 0;
-        m_Effect->setAttack(false);
-    }
+void Sprites::AnimationState(double dt) {
     if(m_dead) {
+        m_DeadTime += dt;
         if(m_DeadTime >= 100.0f) {
             Respawn();
             if(!m_heal.empty()) m_heal.back()->eat();
         }
         else {
             Mix_PlayChannel(-1, m_deadSound, 0);   
-            SetAnimation("player-dead", 4, 150, 0);
+            SetAnimation("player-attacked", 4, 150, 0);
         }
     }
-    if(m_nextLevel) {
-        SetAnimation("player-next-level", 4, 150, 0);
+    if(!haveSword) {
+        if(m_isRunning) 
+        SetAnimation("player-run", 6, 100, 0);
+        if(m_isJumping)
+            SetAnimation("player-jump", 3, 60, 0);
+        if(m_isFalling) {
+            SetAnimation("player-fall", 1, 100, 0);
+        }
+    }
+    else {
+        if(m_isRunning) 
+            SetAnimation("player-run-sw", 6, 100, 0);
+        if(m_isJumping)
+            SetAnimation("player-jump-sw", 3, 60, 0);
+        if(m_isAttacking) {
+            if(attackStartTicks == 0) {
+                attackStartTicks = SDL_GetTicks();
+            }
+            std::string name_attack = "player-attack" + std::to_string(m_isAttacking);
+            std::string name_attack_effect = "player-attack-effected" + std::to_string(m_isAttacking);
+            SetAnimation(name_attack, 3, 120, attackStartTicks);
+            int diff = (m_Flip == SDL_FLIP_NONE) ? 280 : -50;
+            if(m_isAttacking == 2) {
+                diff = (m_Flip == SDL_FLIP_NONE) ? 250 : -100;
+            }
+            if(m_isAttacking == 3) {
+                diff = (m_Flip == SDL_FLIP_NONE) ? 250 : -100;
+            }
+            for(auto t : m_Effect) {
+                if(t->getName() == name_attack_effect) {
+                    double pos_Y = m_Transform->Y + 80;
+                    if(m_isAttacking == 2) {
+                        pos_Y -= 20;
+                    }
+                    if(m_isAttacking == 3) {
+                        pos_Y -= 70;
+                    }
+                    t->SetAnimation(name_attack_effect, m_Transform->X + diff, pos_Y, 3, 180, attackStartTicks, m_Flip);
+                    t->setAttack(true);
+                    t->Update(dt);
+                }
+                else {
+                    t->setAttack(false);
+                }
+            }
+        }
+        else {
+            for(auto t : m_Effect) {
+                t->setAttack(false);
+            }
+            attackStartTicks = 0;
+        }
+        if(m_dead) {
+            if(m_DeadTime >= 100.0f) {
+                Respawn();
+                if(!m_heal.empty()) m_heal.back()->eat();
+            }
+            else {
+                Mix_PlayChannel(-1, m_deadSound, 0);   
+                SetAnimation("player-attacked", 4, 150, 0);
+            }
+        }
+        if(m_isFalling) {
+            SetAnimation("player-fall-sw", 1, 100, 0);
+        }
     }
 }
 

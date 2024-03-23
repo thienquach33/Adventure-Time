@@ -17,7 +17,7 @@ bool TrapCollision::checkCollision(SDL_Rect a, SDL_Rect b) {
 bool TrapCollision::mapCollision(SDL_Rect a) {
     int tileSize = 80;
     int rowCount = 22;
-    int colCount = 222;
+    int colCount = 129;
 
     int left_tile = a.x / tileSize;
     int right_tile = (a.x + a.w) / tileSize;
@@ -42,7 +42,7 @@ bool TrapCollision::mapCollision(SDL_Rect a) {
 bool TrapCollision::checkTrapCollision(SDL_Rect a) {
     int tileSize = 80;
     int rowCount = 22;
-    int colCount = 74;
+    int colCount = 129;
 
     if(a.y + a.h >= rowCount * tileSize - 15) return true;    
 
