@@ -228,6 +228,10 @@ void Monster::AnimationState(double dt) {
                 SetAnimation("enemy-deaded", 4, 200, 0);    
             }
             else {
+                if(add_point == false) {
+                    Engine::GetInstance()->score_game += 100;
+                    add_point = true;
+                }
                 SetAnimation("enemy-dead", 4, 200, 0);
             }
         }

@@ -139,6 +139,7 @@ void Object::Update(double dt) {
         m_RigidBody->UnSetForce();
 
         m_RigidBody->ApplyForceX(dx * 0.5f);
+        sail->applydx(dx);
 
         m_RigidBody->Update(dt);
         m_LastSafePosition.X = m_Transform->X;

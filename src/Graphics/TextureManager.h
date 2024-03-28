@@ -5,6 +5,7 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
 #include "SDL2/SDL_ttf.h"
+#include "../Core/Engine.h"
 #include <map>
 
 class TextureManager
@@ -18,6 +19,7 @@ class TextureManager
         void Clean();
 
         void Draw(std::string id, double x, double y, int width, int height, double scale, SDL_RendererFlip flip=SDL_FLIP_NONE);
+        void DrawMenu(std::string id, double x, double y, int width, int height, double scale, SDL_RendererFlip flip=SDL_FLIP_NONE);
         void DrawTile(std::string tilesetID, int tileSize, int x, int y, int row, int frame, SDL_RendererFlip flip=SDL_FLIP_NONE);
         void DrawText(std::string id, double x, double y, int width, int height);
         void DrawMouse(std::string id, double x, double y, int width, int height, SDL_Rect);

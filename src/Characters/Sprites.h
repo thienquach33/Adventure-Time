@@ -48,6 +48,7 @@ class Sprites : public Character {
         virtual void addSword(Item* sword) { m_sword = sword; }
         virtual void addBomb(Object* bomb) { this->bomb = bomb; }
         virtual void addShip(Object* ship) { this->ship = ship; }
+        virtual Vector2D getPosition() { return Vector2D(m_Transform->X, m_Transform->Y); }
 
         int attackStartTicks = 0;
     private :
@@ -62,6 +63,7 @@ class Sprites : public Character {
         int turn_play;
 
         bool haveSword = false;
+        bool m_is_on_ship = false;
         bool m_isJumping;
         bool m_isGrounded;
         bool m_wasGrounded;

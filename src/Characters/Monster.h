@@ -39,6 +39,7 @@ class Monster : public Character {
         void setType(int type) { this->type = type; }
         void addBall(Object* ball) { m_ball = ball; }
         Object* getBall() { return m_ball; }
+        std::vector<Effect*> getEffect() { return m_Effect; }
 
         int attackStartTicks = 0;
 
@@ -60,8 +61,8 @@ class Monster : public Character {
         };
 
         State m_State = State::MovingLeft;
-        double m_IdleTime;
-        double m_MoveTime;
+        double m_IdleTime = 0;
+        double m_MoveTime = 0;
 
         Animation* m_Animation;
         RigidBody* m_RigidBody;
@@ -74,6 +75,7 @@ class Monster : public Character {
         double m_fire = 0;
         int turn_play, type;
 
+        bool add_point = false;
         bool m_isJumping;
         bool m_isGrounded;
         bool m_isFalling;

@@ -5,6 +5,7 @@
 #include "../Physics/RigidBody.h"
 #include "../Animation/Animation.h"
 #include "../Physics/Collider.h"
+#include "Decor.h"
 
 #define JUMP_TIME 15.0f
 #define JUMP_FORCE 12.0f
@@ -37,8 +38,13 @@ class Object : public Character {
         bool isFalling() { return m_isFalling; }
         void active(bool uuui) { active_bomb = uuui; }
         Object* getExploration() { return explore; }
-
+        void addSail(Decor* sail) { this->sail = sail; }
+        Decor* getSail() { return sail; }
         SDL_Rect getCollider() { return m_Collider->Get(); }
+        inline int getDx() { return dx; }
+        bool moving() {
+            return (!sail->getVar() && dx != 0);
+        }
 
         int attackStartTicks = 0;
 
@@ -73,6 +79,7 @@ class Object : public Character {
         Collider* m_Collider;
 
         Object* explore;
+        Decor* sail;
 
         Vector2D m_LastSafePosition;
 };

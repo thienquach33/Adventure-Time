@@ -29,7 +29,7 @@ Item* key_level;
 Item* sword;
 std::vector<Item*> heal;
 std::vector<Object*> portal_gate;
-std::vector<Button*> button;
+std::vector<Button*> button, inGame_button;
 std::vector<Effect*> effect;
 std::vector<Effect*> enemy_effect;
 Object* ball;
@@ -43,17 +43,17 @@ std::vector<std::pair<int, int>> postision_box[3] = {
      { }
 };
 std::vector<std::pair<int, int>> sliver_postision_item[3] = {
-    { {9, 15}, {11 , 15}, {13, 17}, {22, 14}, {28, 14}, {35, 12}, {48, 15}, {55, 13}, {67, 7}},
+    { {12, 19}, {20, 16}, {27, 15}, {70, 16}, {103, 14}, {91, 19}, {124, 19}, {23, 5}, {17, 6}, {97, 17}},
     { },
     { }
 };
 std::vector<std::pair<int, int>> enemy_postision[3] = {
-    { {22, 12} },
+    { {22, 12}, {45, 14}, {87, 18}},
     { },
     { }
 };
 std::vector<std::pair<int, int>> gold_postision_item[3] = {
-    { {2, 16} , {31, 16}, {69, 6}, {40, 16}},
+    { {2, 16} , {12, 7}, {33, 14}, {46, 15}, {126, 9}, {74, 14}, {83, 19}, {29, 6}},
     { },
     { }
 };
@@ -75,6 +75,7 @@ bool Engine::Init() {
     m_Window = SDL_CreateWindow("Advanture Time", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
     m_Renderer = SDL_CreateRenderer(m_Window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     SDL_Log("Success Init !!!\n");
+    
 
     // init Mix
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 128);
@@ -86,7 +87,7 @@ bool Engine::Init() {
     font = TTF_OpenFont("assets/fonts/Stacked pixel.ttf", 30);
 
     // create player
-    player = new Sprites(new Properties("player-idle", 28 * 80, 4 * 80, 64, 40, 5));
+    player = new Sprites(new Properties("player-idle", 8 * 80, 15 * 80, 64, 40, 5));
     
     // no sword    
     player->Load("player-idle", "assets/player/Sprites/Captain Clown Nose/Captain Clown Nose without Sword/01-Idle/Idle", 5);
@@ -106,7 +107,8 @@ bool Engine::Init() {
     player->Load("player-attacked", "assets/player/Sprites/Captain Clown Nose/Captain Clown Nose with Sword/14-Hit Sword/Hit Sword", 4);
     player->Load("player-attack2", "assets/player/Sprites/Captain Clown Nose/Captain Clown Nose with Sword/16-Attack 2/Attack2", 3);
     player->Load("player-attack3", "assets/player/Sprites/Captain Clown Nose/Captain Clown Nose with Sword/17-Attack 3/Attack3", 3);
-    
+    player->Load("menu", "assets/ui/menu", 1);
+
     // attack_effected;
     Effect* player_attack_effected1 = new Effect(new Properties("player-attack-effected1", 600, 600, 64, 40, 1.5));
     player_attack_effected1->Load("player-attack-effected1", "assets/player/Sword Effects/24-Attack 1/Attack effec1", 3);
@@ -174,13 +176,58 @@ bool Engine::Init() {
     exit_button->Load("button-exit", "assets/ui/Buttons With Text/Text_Exit_Button", 3);
     button.push_back(exit_button);
 
+    // Button* pause_button = new Button(new Properties("button-pause", 1400, 1400, 96, 32, 3));
+    // pause_button->setType(4);
+    // pause_button->Load("button-pause", "assets/ui/button/pause/342 px/pause", 3);
+    // inGame_button.push_back(pause_button);
+
     TextureManager::GetInstance()->Load("menu-screen", "assets/ui/menu_screen.png");
     TextureManager::GetInstance()->Load("title", "assets/ui/title.png");
+    TextureManager::GetInstance()->Load("menu-game", "assets/ui/menu-0.png");
+
+    for(int i = 0; i < 12; i++) {
+        std::string game_over_banner = "banner-" + std::to_string(i);
+        std::string name_path = "assets/ui/Yellow Board/banner-" + std::to_string(i) + ".png";
+        TextureManager::GetInstance()->Load(game_over_banner, name_path);
+    }
+
+    for(int i = 0; i < 9; i++) {
+        std::string game_over_banner = "paper-" + std::to_string(i);
+        std::string name_path = "assets/ui/Orange Paper/paper-" + std::to_string(i) + ".png";
+        TextureManager::GetInstance()->Load(game_over_banner, name_path);    
+    }
+
+    for(int i = 1; i <= 52; i++) {
+        std::string name_text = "text-" + std::to_string(i);
+        std::string name_path = "assets/ui/Small Text/" + std::to_string(i) + ".png";
+        TextureManager::GetInstance()->Load(name_text, name_path);
+    }
+
+    for(int i = 0; i < 13; i++) {
+        std::string game_over_banner = "banner-p-" + std::to_string(i);
+        std::string name_path = "assets/ui/Small Banner/banner-p-" + std::to_string(i) + ".png";
+        TextureManager::GetInstance()->Load(game_over_banner, name_path);    
+    }
+
+    for(int i = 0; i < 26; i++) {
+        std::string button_name = "icon-" + std::to_string(i);
+        std::string name_path = "assets/ui/Small Icons/" + std::to_string(i) + ".png";
+        TextureManager::GetInstance()->Load(button_name, name_path);
+    }
+
+    for(int i = 0; i < 17; i++) {
+        std::string button_name = "yellow-button-" + std::to_string(i);
+        std::string name_path = "assets/ui/Yellow Button/" + std::to_string(i) + ".png";
+        TextureManager::GetInstance()->Load(button_name, name_path);
+    }
 
     SDL_Surface* surface = IMG_Load("assets/ui/menu_screen.png");
     SDL_Texture* texture = SDL_CreateTextureFromSurface(m_Renderer, surface);
 
     return m_isRunning = true;
+}
+
+void Engine::menuGame() {
 }
 
 void Engine::Init_Level(int level) {
@@ -217,6 +264,7 @@ void Engine::Init_Level(int level) {
         coin.push_back(new_coin);
     }
 
+    portal_gate.clear();
     // create portal gate
     for(auto pos : portal_gate_postision[level - 1]) {
         Object* new_portal_gate = new Object(new Properties("portal-gate", pos.first * 80, pos.second * 80, 20, 32, 10));
@@ -238,10 +286,11 @@ void Engine::Init_Level(int level) {
         new_enemy->Load("enemy-deaded", "assets/enemy/Sprites/Crabby/10-Dead Ground/Dead Ground", 4);
         enemy.push_back(new_enemy);
     }
-    Effect* crab_attack_effected = new Effect(new Properties("crab-attack-effected", 600, 600, 118, 24, 5));
-    crab_attack_effected->Load("crab-attack-effected", "assets/enemy/Sprites/Crabby/11-Attack Effect/Attack Effect", 3);
-    enemy_effect.push_back(crab_attack_effected);
     for(auto t : enemy) {
+        enemy_effect.clear();
+        Effect* crab_attack_effected = new Effect(new Properties("crab-attack-effected", 600, 600, 118, 24, 5));
+        crab_attack_effected->Load("crab-attack-effected", "assets/enemy/Sprites/Crabby/11-Attack Effect/Attack Effect", 3);
+        enemy_effect.push_back(crab_attack_effected);
         t->addEffect(enemy_effect);
     }
 
@@ -257,6 +306,17 @@ void Engine::Init_Level(int level) {
     ship = new Object(new Properties("ship-idle", 49 * 80, 18 * 80, 80, 26, 5));
     ship->Load("ship-idle", "assets/Objects/Sprites/Ship/Ship/Idle/ship", 6);
     ship->setType(4);
+
+    decor_things.clear();
+    Decor* sail = new Decor(new Properties("sail-no-wind", 4120, 1200, 28, 50, 5));
+    sail->Load("sail-no-wind", "assets/Decor/Sail/No Wind/sail-no-wind", 8);
+    sail->Load("sail-wind", "assets/Decor/Sail/Wind/sail-wind", 4);
+    sail->Load("sail-tf-no-wind", "assets/Decor/Sail/Transition to No Wind/sail-tf-no", 11);
+    sail->Load("sail-tf-wind", "assets/Decor/Sail/Transition to Wind/sail-tf-wind", 3);
+    sail->setType(4);
+    decor_things.push_back(sail);
+
+    ship->addSail(sail);
 
     Decor* platform = new Decor(new Properties("platform", 650, 1200, 30, 16, 5));
     platform->Load("platform", "assets/Decor/Flag/Platform", 1);
@@ -301,7 +361,7 @@ void Engine::Update() {
             t->Update(dt);
         }
     }
-    if(m_starting) {
+    if(m_starting && !game_over_screen) {
         for(int LEVEL = 1; LEVEL <= 3; LEVEL++) {
             if(player->getLevel() == LEVEL && !loaded_level[LEVEL - 1]) {
                 Init_Level(LEVEL);
@@ -369,6 +429,159 @@ void Engine::Update() {
     }
 }
 
+const int NUM_OF_BANNER = 22;
+std::vector<std::pair<int, int>> banner = { 
+    {1000, 500} , {1160, 500} , {1320, 500} , {1480, 500} , {1640, 500} , {1800, 500},
+    {1000, 660}, {1160, 660}, {1320, 660}, {1480, 660}, {1640, 660}, {1800, 660},
+    {1000, 820}, {1160, 820}, {1320, 820}, {1480, 820}, {1640, 820}, {1800, 820},
+    {1160, 1000}, {1320, 1000}, {1480, 1000}, {1640, 1000}
+};
+std::vector<std::string> banner_text = { 
+    "0", "1" , "1", "1", "1", "2",
+    "3", "4", "4", "4", "4", "5",
+    "6", "7", "7", "7", "7", "8",
+    "9", "10", "10", "11"
+};
+
+const int NUM_OF_PAPER = 18;
+std::vector<std::pair<int, int>> paper = { 
+    {1005, 500}, {1165, 500}, {1325, 500}, {1485, 500}, {1645, 500}, {1805, 500},
+    {1005, 660}, {1165, 660}, {1325, 660}, {1485, 660}, {1645, 660}, {1805, 660},
+    {1005, 820}, {1165, 820}, {1325, 820}, {1485, 820}, {1645, 820}, {1805, 820},
+};
+
+std::vector<std::string> paper_text = { 
+    "0", "1", "1", "1", "1", "2",
+    "3", "4", "4", "4", "4", "5",
+    "6", "7", "7", "7", "7", "8",
+};
+
+const int NUM_OF_BANNER_P = 5;
+std::vector<std::pair<int, int>> banner_p = {
+    {1000, 300}, {1200, 300}, {1420 - 60 - 30, 260}, {1620 - 60 - 30, 260}, {1820 - 130, 260}
+};
+std::vector<std::string> banner_text_p = {
+    "0", "12", "5", "12", "1"
+};
+std::vector<std::pair<int, int>> exit_banner = {
+    {1800 - 230, 990}, {1990 - 230, 990}
+};
+std::vector<std::string> exit_banner_t = {
+    "10", "1"
+};
+
+std::vector<std::string> yellow_button_text = {
+    "1", "2", "4"
+};
+
+std::vector<std::pair<int, int>> yellow_button = {
+    {1250, 1043}, {1400, 1043}, {1470, 1043}
+};
+
+std::vector<std::string> icon_td = {
+    "16", "9"
+};
+
+std::vector<std::pair<int, int>> icon_pos = {
+    {1265, 1058}, {1450, 1058}
+};
+
+void Engine::GameOverScreen() {
+    if(game_over_screen == false) return;
+    for(int i = 0; i < NUM_OF_BANNER; i++) {
+        std::string game_over_banner = "banner-" + banner_text[i];
+        TextureManager::GetInstance()->DrawMenu(game_over_banner, banner[i].first, banner[i].second, 32, 32, 5);
+    }
+
+    for(int i = 0; i < NUM_OF_PAPER; i++) {
+        std::string game_over_paper = "paper-" + paper_text[i];
+        TextureManager::GetInstance()->DrawMenu(game_over_paper, paper[i].first - 3, paper[i].second, 32, 32, 5);    
+    }
+
+    std::string score = "score:" + std::to_string(score_game);
+    for(int i = 0; i < (int) score.size(); i++) {
+        std::string text_name = "text-" + std::to_string(score[i] - 'a' + 1);
+        if(score[i] == ':') text_name = "text-50";
+        if(score[i] >= '1' && score[i] <= '9') {
+            text_name = "text-" + std::to_string(score[i] - '0' + 26);
+        }
+        if(score[i] == '0') text_name = "text-36";
+        TextureManager::GetInstance()->DrawMenu(text_name, 1200 + i * 60, 700, 5, 6, 10);
+    }
+
+    for(int i = 0; i < NUM_OF_BANNER_P; i++) {
+        std::string game_over_paper = "banner-p-" + banner_text_p[i];
+        TextureManager::GetInstance()->DrawMenu(game_over_paper, banner_p[i].first - 3 - 30 + 15, banner_p[i].second, 32, 32, 8);    
+    }
+
+    std::string game_text = "game";
+    for(int i = 0; i < (int) game_text.size(); i++) {
+        std::string text_name = "text-" + std::to_string(game_text[i] - 'a' + 1);
+        TextureManager::GetInstance()->DrawMenu(text_name, 1250 + i * 54 - 70 + 12, 395, 5, 6, 9);
+    }
+    std::string over_text = "over";
+    for(int i = 0; i < (int) over_text.size(); i++) {
+        std::string text_name = "text-" + std::to_string(over_text[i] - 'a' + 1);
+        if(over_text[i] == '!') text_name = "46";
+        TextureManager::GetInstance()->DrawMenu(text_name, 1630 + i * 54 - 120 + 12, 355, 5, 6, 9);
+    }
+    for(int i = 0; i < 2; i++) {
+        std::string exit_banner_name = "banner-p-" + exit_banner_t[i];
+        TextureManager::GetInstance()->DrawMenu(exit_banner_name, exit_banner[i].first - 3 - 30 + 15, exit_banner[i].second, 32, 32, 6);
+    }
+    std::string exit_text = "exit";
+    for(int i = 0; i < (int) exit_text.size(); i++) {
+        std::string exit_text_t = "text-" + std::to_string(exit_text[i] - 'a' + 1);
+        TextureManager::GetInstance()->DrawMenu(exit_text_t, 1910 - 180 + i * 36 - 70 + 12, 1058, 5, 6, 6);
+
+        SDL_Rect boxxx = {1910 - 180 + i * 36 - 70 + 12, 1058, 5 * 6, 6 * 6};
+        SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &boxxx);
+
+        SDL_Rect temp = {1910 - 180 + i * 36 - 70 + 12, 1058, 5 * 6, 6 * 5};
+        SDL_Rect temp_mouse = Mouse::getInstance()->getPoint();
+        if(SDL_HasIntersection(&temp, &temp_mouse)) {
+            if(Mouse::getInstance()->isClicked()) {
+                game_over_screen = false;
+                m_starting = false;
+                return;
+            }
+        }
+    }
+
+    for(int i = 0; i < 3; i++) {
+        std::string yellow_button_name = "yellow-button-" + yellow_button_text[i];
+        TextureManager::GetInstance()->DrawMenu(yellow_button_name, yellow_button[i].first, yellow_button[i].second, 14, 14, 5);                
+    
+        SDL_Rect boxxx = {yellow_button[i].first, yellow_button[i].second, 14 * 5, 14 * 5};
+        SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &boxxx);
+
+        SDL_Rect temp = {yellow_button[i].first, yellow_button[i].second, 14 * 5, 14 * 5};
+        SDL_Rect temp_mouse = Mouse::getInstance()->getPoint();
+        if(SDL_HasIntersection(&temp, &temp_mouse)) {
+            if(Mouse::getInstance()->isClicked()) {
+                if(i == 0) {
+                    high_score_screen = true;
+                }
+                else {
+                    score_game = 0;
+                    game_over_screen = false;
+                    Init_Level(1);
+                    return;
+                }
+            }
+        }
+    }
+
+    for(int i = 0; i < 2; i++) {
+        std::string icon_name = "icon-" + icon_td[i];
+        TextureManager::GetInstance()->DrawMenu(icon_name, icon_pos[i].first, icon_pos[i].second, 8, 6, 5);
+    }
+}
+
+void Engine::mainMenu() {
+    
+}
+
 bool Engine::Clean() {
     TextureManager::GetInstance()->Clean();
     SDL_DestroyWindow(m_Window);
@@ -377,7 +590,7 @@ bool Engine::Clean() {
     IMG_Quit();
     Mix_FreeChunk(gameMusic);
     Mix_FreeChunk(gameOver);
-    Mix_Quit();Mouse::getInstance()->Draw();
+    Mix_Quit();
     
     SDL_Quit();
     TTF_CloseFont(font);
@@ -385,18 +598,26 @@ bool Engine::Clean() {
 }
 
 void Engine::Render() {
+    SDL_RenderClear(m_Renderer);
     if(m_starting) {
+        if(game_over_screen == true) {
+            darker = true;
+        }
+        else {
+            darker = false;
+        }
         m_LevelMap->Render();
         player->Draw();
         key_level->Draw();
         ship->Draw();
+
         for(auto t : enemy) {
             t->Draw();
+            for(auto d : t->getEffect()) {
+                d->Draw();
+            }
         }
         for(auto t : effect) {
-            t->Draw();
-        }
-        for(auto t : enemy_effect) {
             t->Draw();
         }
         for(auto t : box) {
@@ -423,6 +644,9 @@ void Engine::Render() {
             ball->Draw();
             ball->getExploration()->Draw();
         }
+        for(auto t : inGame_button) {
+            t->Draw();
+        }
     }
     else {
         TextureManager::GetInstance()->DrawBackground("menu-screen", {0, 0, 2960, 1790});
@@ -431,6 +655,13 @@ void Engine::Render() {
             t->Draw();
         }
     }
+    if(esc_menu) {
+        TextureManager::GetInstance()->Draw("menu-game", 0, 0, 128, 128, 5);
+    }
+    if(player->getTurn() > 0) {
+        GameOverScreen();
+        // Quit();
+    } 
     Mouse::getInstance()->Draw();
     SDL_RenderPresent(m_Renderer);
 }

@@ -44,6 +44,7 @@ void Button::Update(double dt) {
     if(type == 1) name_button = "button-setting";
     if(type == 2) name_button = "button-menu";
     if(type == 3) name_button = "button-exit";
+    if(type == 4) name_button = "button-pause";
 
     m_Collider->Set(m_Transform->X, m_Transform->Y, m_Width * m_scale, m_Height * m_scale);
     SDL_Rect temp = m_Collider->Get();
@@ -56,7 +57,9 @@ void Button::Update(double dt) {
             }
             else if(type == 3) {
                 Engine::GetInstance()->setRunning(false);
-            
+            }
+            else if(type == 4) {
+                Engine::GetInstance()->esc_menu = true;
             }
         }
         else { 

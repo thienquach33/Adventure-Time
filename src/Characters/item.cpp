@@ -83,6 +83,10 @@ void Item::Update(double dt) {
 void Item::AnimationState() {
     if(m_type == 0 || m_type == 2) {
         if(m_isEtten) {
+            if(add_point == false) {
+                Engine::GetInstance()->score_game += (m_type == 0) ? 10 : 30;
+                add_point = true;
+            }
             SetAnimation("coin-effect", 3, 200);
             if(m_EatTimer >= 50.0f) {
                 m_tobeDestroy = true;

@@ -27,15 +27,22 @@ class Decor : public Character {
         virtual void AnimationState(double dt);
 
         virtual void setType(int type) { m_type = type; }
+        virtual void applydx(int dx) { this->dx = dx; }
+        virtual void setOut(bool out) { m_out = out; }
+        inline bool getVar() { return var; }
 
         SDL_Rect getCollider() { return m_Collider->Get(); }
 
         int attackStartTicks = 0;
     private :
+        bool m_out = false;
+        double m_TimeVar = 0;
         bool m_isTurning = false;
+        bool var = false;
         double helm_time_idle = 0;
         double helm_time_turn = 0;
         int m_type;
+        int dx = 0;
         Animation* m_Animation;
         RigidBody* m_RigidBody;
         Collider* m_Collider;

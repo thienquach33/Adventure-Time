@@ -43,6 +43,8 @@ Sprites::Sprites(Properties* props) : Character(props) {
 }
 
 void Sprites::Draw() {
+    TextureManager::GetInstance()->LoadText("Score: " + std::to_string(Engine::GetInstance()->score_game), {0, 0, 255, 255}, m_font);
+    TextureManager::GetInstance()->DrawText("Score: " + std::to_string(Engine::GetInstance()->score_game), 200, 200, 500, 100);
     m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
     Vector2D cam = Camera::GetInstance()->GetPostision();
     // SDL_Rect box = m_Collider->Get();
@@ -78,9 +80,12 @@ void Sprites::Respawn(){
     m_dead = false;
     m_DeadTime = 0;
     ++turn_play;
+    Engine::GetInstance()->SetGameOver(true);
+    Engine::GetInstance()->HighScore.insert(Engine::GetInstance()->score_game);
 }
 
 void Sprites::Update(double dt) {
+    m_Collider->Set(m_Transform->X + 22 * 5, m_Transform->Y + 3 * 5, 100, 130);
     if(haveSword)
         SetAnimation("player-idle-sw", 5, 100, 0);
     else 
@@ -160,7 +165,7 @@ void Sprites::Update(double dt) {
     }
 
     // jumping
-    if(Input::getInstance()->getKeyDown(SDL_SCANCODE_SPACE) && m_isGrounded) {
+    if(Input::getInstance()->getKeyDown(SDL_SCANCODE_SPACE) && m_isGrounded && (!(m_is_on_ship && ship->moving()))) {
         Mix_PlayChannel(-1, m_jumpSound, 0);
         m_isJumping = true;
         m_isGrounded = false;
@@ -196,8 +201,12 @@ void Sprites::Update(double dt) {
         m_Transform->Y = m_LastSafePosition.Y;
         m_isGrounded = true;
         above = true;
+        ship->getSail()->setOut(false);
+        m_is_on_ship = true;
     }
     else {
+        m_is_on_ship = false;
+        ship->getSail()->setOut(true);
         ship->applydx(0);
     }
 

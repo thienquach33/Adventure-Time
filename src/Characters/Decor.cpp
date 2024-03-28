@@ -13,15 +13,18 @@ Decor::Decor(Properties* props) : Character(props) {
     m_Collider->SetBuffer(0, 0, 0, 0);
     
     m_Animation = new Animation();
+
+    m_RigidBody = new RigidBody();
+    m_RigidBody->SetGravity(2.0f);
 }
 
 void Decor::Draw() {
     m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
     Vector2D cam = Camera::GetInstance()->GetPostision();
-    // SDL_Rect box = m_Collider->Get();
-    // box.x -= cam.X;
-    // box.y -= cam.Y;
-    // SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
+    SDL_Rect box = m_Collider->Get();
+    box.x -= cam.X;
+    box.y -= cam.Y;
+    SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
 }
 
 void Decor::Load(std::string name_animation, std::string path_animation, int num, SDL_RendererFlip flip) {
@@ -58,6 +61,35 @@ void Decor::Update(double dt) {
             m_isTurning = true;
             helm_time_idle = 0;
         }
+    }
+    else if(m_type == 4) {
+        if(m_out && (dx == 0 || var == 1)) SetAnimation("sail-no-wind", 8, 100, 0);
+        m_Collider->Set(m_Transform->X, m_Transform->Y, m_Width * m_scale + 60, m_Height * m_scale);
+    
+        m_RigidBody->UnSetForce();
+
+        m_RigidBody->ApplyForceX(dx * 0.5f);
+
+        if(!m_out && dx != 0 && !var) {
+            SetAnimation("sail-wind", 4, 100, 0);
+        }
+        if(m_out && dx && var) {
+            SetAnimation("sail-wind", 4, 100, 0);
+        }
+
+        m_RigidBody->Update(dt);
+        m_LastSafePosition.X = m_Transform->X;
+        m_Transform->X += m_RigidBody->Position().X;
+        m_Collider->Set(m_Transform->X, m_Transform->Y, m_Width * m_scale + 60, m_Height * m_scale);
+
+        if(var == true) {
+            m_TimeVar += dt;
+        }
+
+        if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
+            m_Transform->X = m_LastSafePosition.X;
+            var = 1;
+        }  
     }
     AnimationState(dt);
     m_Animation->Update();
