@@ -49,6 +49,8 @@ class Sprites : public Character {
         virtual void addBomb(Object* bomb) { this->bomb = bomb; }
         virtual void addShip(Object* ship) { this->ship = ship; }
         virtual Vector2D getPosition() { return Vector2D(m_Transform->X, m_Transform->Y); }
+        virtual void setPos() { m_Transform->X = 8 * 80, m_Transform->Y = 15 * 80; haveSword = false; }
+        virtual void addBottle(std::vector<Item*> bottle) { m_bottle = bottle; }
 
         int attackStartTicks = 0;
     private :
@@ -80,7 +82,7 @@ class Sprites : public Character {
         Collider* m_Collider;
         Collider* m_Trap;
         std::vector<Object*> m_box;
-        std::vector<Item*> m_item, m_heal;
+        std::vector<Item*> m_item, m_heal, m_bottle;
         Item* health_bar;
         Item* m_sword;
         std::vector<Monster*> m_enemy, m_shotter;

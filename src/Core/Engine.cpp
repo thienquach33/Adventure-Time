@@ -21,7 +21,7 @@ Mix_Chunk* gameOver;
 TTF_Font* font;
 
 std::vector<Object*> box;
-std::vector<Item*> coin;
+std::vector<Item*> coin, bottle;
 std::vector<Monster*> enemy;
 std::vector<Decor*> decor_things;
 Item* health_bar;
@@ -38,7 +38,7 @@ Object* ship;
 const int NUM_OF_HEAL = 3;
 
 std::vector<std::pair<int, int>> postision_box[3] = {
-     { {6, 15}, {15, 15} },
+     { {6, 15}, {15, 15} , {99, 16}, {126, 8}},
      {  },
      { }
 };
@@ -48,9 +48,11 @@ std::vector<std::pair<int, int>> sliver_postision_item[3] = {
     { }
 };
 std::vector<std::pair<int, int>> enemy_postision[3] = {
-    { {22, 12}, {45, 14}, {87, 18}},
-    { },
-    { }
+    { {22, 12}, {45, 14}, {73, 14}}
+};
+
+std::vector<std::pair<int, int>> pink_start_pos = {
+    {8, 6}
 };
 std::vector<std::pair<int, int>> gold_postision_item[3] = {
     { {2, 16} , {12, 7}, {33, 14}, {46, 15}, {126, 9}, {74, 14}, {83, 19}, {29, 6}},
@@ -58,7 +60,7 @@ std::vector<std::pair<int, int>> gold_postision_item[3] = {
     { }
 };
 std::vector<std::pair<int, int>> portal_gate_postision[3] = {
-    { {69, 9} },
+    { {45, 13} },
     {  },
     {  } 
 };
@@ -87,7 +89,7 @@ bool Engine::Init() {
     font = TTF_OpenFont("assets/fonts/Stacked pixel.ttf", 30);
 
     // create player
-    player = new Sprites(new Properties("player-idle", 8 * 80, 15 * 80, 64, 40, 5));
+    player = new Sprites(new Properties("player-idle", 69 * 80, 14 * 80, 64, 40, 5));
     
     // no sword    
     player->Load("player-idle", "assets/player/Sprites/Captain Clown Nose/Captain Clown Nose without Sword/01-Idle/Idle", 5);
@@ -128,9 +130,6 @@ bool Engine::Init() {
     health_bar->setType(3);
 
     // sword
-    sword = new Item(new Properties("sword", 22 * 80, 16 * 80, 20, 20, 5));
-    sword->Load("sword", "assets/player/Sprites/Sword/21-Sword Idle/Sword Idle", 8);
-    sword->setType(5);
 
     for(int i = 0; i < NUM_OF_HEAL; i++) {
         Item* new_heal = new Item(new Properties("heal-full", 17 * 80 + i * 80, 10 * 80, 22, 19, 3));
@@ -144,7 +143,6 @@ bool Engine::Init() {
     key_level->setType(4);
 
     // origin item
-    player->addSword(sword);
     player->addEffect(effect);
     player->addHeal(heal);
     player->addHealthBar(health_bar);
@@ -158,7 +156,7 @@ bool Engine::Init() {
 
     Button* play_button = new Button(new Properties("button-play", 1400, 1100, 96, 32, 3));
     play_button->setType(0);
-    play_button->Load("button-play", "/home/thienq/Advanture Time/assets/ui/Buttons With Text/Text_Play_Button", 3);
+    play_button->Load("button-play", "assets/ui/Buttons With Text/Text_Play_Button", 3);
     button.push_back(play_button);
 
     Button* setting_button = new Button(new Properties("button-setting", 1400, 1250, 96, 32, 3));
@@ -170,6 +168,10 @@ bool Engine::Init() {
     menu_button->setType(2);
     menu_button->Load("button-menu", "assets/ui/Buttons With Text/Text_Menu_Button", 3);
     button.push_back(menu_button);
+
+    Button* continue_button = new Button(new Properties("button-continue", 1400, 1100, 96, 32, 3));
+    continue_button->setType(5);
+    continue_button->Load("button-continue", "assets/ui/Buttons With Text/Text_Continue_Button", 3);
 
     Button* exit_button = new Button(new Properties("button-exit", 1400, 1550, 96, 32, 3));
     exit_button->setType(3);
@@ -202,6 +204,11 @@ bool Engine::Init() {
         std::string name_path = "assets/ui/Small Text/" + std::to_string(i) + ".png";
         TextureManager::GetInstance()->Load(name_text, name_path);
     }
+    for(int i = 1; i <= 36; i++) {
+        std::string name_text = "big-text-" + std::to_string(i);
+        std::string name_path = "assets/ui/Big Text/" + std::to_string(i) + ".png";
+        TextureManager::GetInstance()->Load(name_text, name_path);
+    }
 
     for(int i = 0; i < 13; i++) {
         std::string game_over_banner = "banner-p-" + std::to_string(i);
@@ -221,13 +228,240 @@ bool Engine::Init() {
         TextureManager::GetInstance()->Load(button_name, name_path);
     }
 
+    for(int i = 1; i < 17; i++) {
+        std::string green_board = "green-board-" + std::to_string(i);
+        std::string name_path = "assets/ui/Green Board/" + std::to_string(i) + ".png";
+        TextureManager::GetInstance()->Load(green_board, name_path);
+    }
+
+    for(int i = 1; i < 17; i++) {
+        std::string yellow_paper = "yellow-paper-" + std::to_string(i);
+        std::string name_path = "assets/ui/Yellow Paper/" + std::to_string(i) + ".png";
+        TextureManager::GetInstance()->Load(yellow_paper, name_path);
+    }
+
+    for(int i = 1; i < 17; i++) {
+        std::string green_button = "green-button-" + std::to_string(i);
+        std::string name_path = "assets/ui/Green Button/" + std::to_string(i) + ".png";
+        TextureManager::GetInstance()->Load(green_button, name_path);   
+    }
+
+    for(int i = 1; i < 13; i++) {
+        std::string text_name = "prefabs-" + std::to_string(i);
+        std::string name_path = "assets/ui/Prefabs/" + std::to_string(i) + ".png";
+        TextureManager::GetInstance()->Load(text_name, name_path);
+    }
+
     SDL_Surface* surface = IMG_Load("assets/ui/menu_screen.png");
     SDL_Texture* texture = SDL_CreateTextureFromSurface(m_Renderer, surface);
 
     return m_isRunning = true;
 }
 
+std::vector<std::pair<int, int>> banner_p_highcore = {
+    {1160, 300}, {1380, 300}, {1600, 300}, {1800, 300}
+};
+
+std::vector<std::string> banner_p_highcore_text = {
+    "0", "12", "12", "1"
+};
+
+void Engine::highScore() {
+    if(high_score_screen == false) return;
+    int bonus = Camera::GetInstance()->GetPostision().X;
+    for(int i = 0; i < 4; i++) {
+        std::string banner_p_highcore_name = "banner-p-" + banner_p_highcore_text[i];
+        TextureManager::GetInstance()->DrawMenu(banner_p_highcore_name, banner_p_highcore[i].first + bonus - 50, banner_p_highcore[i].second, 32, 32, 7);
+    }
+    std::string leader_board = "leaderboard";
+    for(int i = 0; i < (int) leader_board.size(); i++) {
+        std::string text_name = "big-text-" + std::to_string(leader_board[i] - 'a' + 1);
+        TextureManager::GetInstance()->DrawMenu(text_name, 1280 + i * 48 + bonus, 380, 10, 11, 4);
+    }
+    TextureManager::GetInstance()->DrawMenu("prefabs-3", 1220 + bonus, 500, 128, 128, 5);
+
+    int cnt = 0;
+
+    for(auto s : HighScore) {
+        if(cnt >= 5) break;
+        std::string text_name = "rank " + std::to_string(++cnt) + "   " + std::to_string(s);
+        for(int i = 0; i < (int) text_name.size(); i++) {
+            std::string temp;
+            if(text_name[i] >= '1' && text_name[i] <= '9') {
+                temp = "big-text-" + std::to_string(text_name[i] - '0' + 26);
+            }
+            if(text_name[i] == '0') temp = "big-text-36";
+            if(text_name[i] >= 'a' && text_name[i] <= 'z') {
+                temp = "big-text-" + std::to_string(text_name[i] - 'a' + 1);
+            }
+            // if(text_name[i] == '#') temp = "big-text-44";
+            // if(text_name[i] == '.') temp = "big-text-48";
+            TextureManager::GetInstance()->DrawMenu(temp, 1300 + i * 40 + bonus, 520 + cnt * 100, 10, 11, 4);
+        }
+    }
+}
+
+const int NUM_OF_MAIN_MENU_GREEN_BOARD = 22;
+
+std::vector<std::pair<int, int>> banner_green_board = {
+    {1160, 500}, {1320, 500}, {1480, 500}, {1640, 500}, {1800, 500},
+    {1160, 660}, {1320, 660}, {1480, 660}, {1640, 660}, {1800, 660},
+    {1160, 820}, {1320, 820}, {1480, 820}, {1640, 820}, {1800, 820},
+    {1160, 930}, {1320, 930}, {1480, 930}, {1640, 930}, {1800, 930},
+    {2000, 500}, {2000, 660}
+};
+
+std::vector<std::string> green_board = {
+    "1", "2", "2", "2", "3",
+    "4", "5", "5", "5", "6",
+    "4", "5", "5", "5", "6",
+    "7", "8", "8", "8", "9",
+    "13", "15"
+};
+
+const int NUM_OF_YELLOW_PAPER = 11;
+
+std::vector<std::pair<int, int>> yellow_paper_pos = {
+    {1160, 520}, {1320, 520}, {1480, 520}, {1640, 520}, {1800, 520},
+    {1160, 680}, {1320, 680}, {1480, 680}, {1640, 680}, {1800, 680}, 
+    {1997, 530}
+};
+
+std::vector<std::string> yellow_paper_text = {
+    "1", "2", "2", "2", "3",
+    "7", "8", "8", "8", "9", 
+    "16"
+};
+
+const int NUM_OF_GREEN_BUTTON = 14;
+std::vector<std::pair<int, int>> green_button = {
+    {1250, 800}, {1250, 900}, {1700, 800}, {1996, 670}, {1110, 500},
+    {1420, 780}, {1490, 780}, {1560, 780},
+    {1420, 850}, {1490, 850}, {1560, 850},
+    {1420, 920}, {1490, 920}, {1560, 920}
+};
+
+std::vector<std::string> green_button_text = {
+    "1", "1", "1", "1", "1",
+    "8", "9", "10", "11", "12", "13", "14", "15", "16"
+};
+
+const int NUM_OF_BANNER_P_MENU = 3;
+
+std::vector<std::pair<int, int>> banner_p_menu_pos = {
+    {1750, 870}, {1900, 870}, {2050, 895}
+};
+
+std::vector<std::string> banner_p_menu_text = {
+    "10", "4", "1"
+};
+
+std::vector<std::pair<int, int>> icon_menu_pos = {
+    {1250, 800}, {1250, 900}, {1700, 800}, {1996, 670}, {1110, 500}, {1997, 580}
+};
+
+std::vector<std::string> icon_menu = {
+    "20", "12", "16", "7", "1", "17"
+};
+
 void Engine::menuGame() {
+    if(!menu_screen) return;
+    int bonus = Camera::GetInstance()->GetPostision().X;
+    for(int i = 0; i < NUM_OF_MAIN_MENU_GREEN_BOARD; i++) {
+        std::string green_board_name = "green-board-" + green_board[i];
+        TextureManager::GetInstance()->DrawMenu(green_board_name, banner_green_board[i].first - 100 + bonus, banner_green_board[i].second, 32, 32, 5);
+    }
+    for(int i = 0; i < NUM_OF_YELLOW_PAPER; i++) {
+        std::string yellow_paper_name = "yellow-paper-" + yellow_paper_text[i];
+        TextureManager::GetInstance()->DrawMenu(yellow_paper_name, yellow_paper_pos[i].first - 100 + bonus, yellow_paper_pos[i].second, 32, 32, 5);
+    }
+    std::string main_menu_text = "main menu";
+
+    for(int i = 0; i < (int) main_menu_text.size(); i++) {
+        std::string text_name = "text-" + std::to_string(main_menu_text[i] - 'a' + 1);
+        TextureManager::GetInstance()->DrawMenu(text_name, 1200 + i * 54 + bonus, 650, 5, 6, 9);
+    }
+
+    for(int i = 0; i < NUM_OF_GREEN_BUTTON; i++) {
+        std::string green_button_name = "green-button-" + green_button_text[i];
+        TextureManager::GetInstance()->DrawMenu(green_button_name, green_button[i].first - 50 + bonus, green_button[i].second, 14, 14, 5);
+
+        SDL_Rect boxxx = {green_button[i].first - 50, green_button[i].second, 14 * 5, 14 * 5};
+        SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &boxxx);
+
+        SDL_Rect temp = {green_button[i].first - 50, green_button[i].second, 14 * 5, 14 * 5};
+        SDL_Rect temp_mouse = Mouse::getInstance()->getPoint();
+        if(SDL_HasIntersection(&temp, &temp_mouse)) {
+            if(Mouse::getInstance()->isClicked()) {
+                if(i == 4) {
+                    menu_screen = false;
+                    return;
+                }
+                else if(i == 0) {
+                    score_game = 0;
+                    menu_screen = false;
+                    Init_Level(1);
+                    player->setPos();
+                    return;
+                }
+                else if(i == 2) {
+                    high_score_screen = true;
+                    menu_screen = false;
+                    return;
+                }
+            }
+        }
+    }
+
+    std::string play_text = "play";
+
+    for(int i = 0; i < (int) play_text.size(); i++) {
+        std::string text_name = "text-" + std::to_string(play_text[i] - 'a' + 1);
+        TextureManager::GetInstance()->DrawMenu(text_name, 1385 + i * 48 + bonus, 855, 5, 6, 8);
+    }
+
+    for(int i = 0; i < NUM_OF_BANNER_P_MENU; i++) {
+        std::string banner_p_menu_name = "banner-p-" + banner_p_menu_text[i];
+        TextureManager::GetInstance()->DrawMenu(banner_p_menu_name, banner_p_menu_pos[i].first - 100 + bonus, banner_p_menu_pos[i].second, 32, 32, 5);
+
+        if(i == 0 || i == 2) {
+
+            SDL_Rect boxxx = {banner_p_menu_pos[i].first - ((i == 0) ? 15 : 185), banner_p_menu_pos[i].second + 50, 32 * 4, 60};
+            SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &boxxx);
+
+            SDL_Rect temp = {banner_p_menu_pos[i].first - ((i == 0) ? 15 : 185), banner_p_menu_pos[i].second + 50, 32 * 4, 60};
+            SDL_Rect temp_mouse = Mouse::getInstance()->getPoint();
+
+            if(SDL_HasIntersection(&temp, &temp_mouse)) {
+                if(Mouse::getInstance()->isClicked()) {
+                    if(i == 2) {
+                        m_starting = false;
+                        continue_screen = true;
+                        menu_screen = false;
+                        return;
+                    }
+                    else {
+                        system("xdg-open https://github.com/thienquach33");
+                    }
+                }
+            }
+        }
+    }
+
+    std::string info_text = "info";
+    for(int i = 0; i < (int) info_text.size(); i++) {
+        std::string text_name = "text-" + std::to_string(info_text[i] - 'a' + 1);
+        TextureManager::GetInstance()->DrawMenu(text_name, 1745 + i * 30 + bonus, 930, 5, 6, 5);
+    }
+    std::string exit_text = "exit";
+    for(int i = 0; i < (int) exit_text.size(); i++) {
+        std::string text_name = "text-" + std::to_string(exit_text[i] - 'a' + 1);
+        TextureManager::GetInstance()->DrawMenu(text_name, 1880 + i * 30 + bonus, 950, 5, 6, 5);
+    }
+    for(int i = 0; i < 6; i++) {
+        std::string icon_name = "icon-" + icon_menu[i];
+        TextureManager::GetInstance()->DrawMenu(icon_name, icon_menu_pos[i].first - 35 + bonus, icon_menu_pos[i].second + 15, 8, 6, 5);
+    }
 }
 
 void Engine::Init_Level(int level) {
@@ -264,6 +498,13 @@ void Engine::Init_Level(int level) {
         coin.push_back(new_coin);
     }
 
+
+    bottle.clear();
+    Item* new_green_bottle = new Item(new Properties("green-bottle", 46 * 80, 9 * 80 - 20, 13, 17, 4));
+    new_green_bottle->Load("green-bottle", "assets/item/Sprites/Green Bottle/green-bottle", 7);
+    new_green_bottle->setType(6);
+    bottle.push_back(new_green_bottle);
+
     portal_gate.clear();
     // create portal gate
     for(auto pos : portal_gate_postision[level - 1]) {
@@ -294,10 +535,24 @@ void Engine::Init_Level(int level) {
         t->addEffect(enemy_effect);
     }
 
-    ball = new Object(new Properties("ball-idle", 10 * 80, 6 * 80, 16, 16, 5));
+    for(auto pos : pink_start_pos) {
+        Monster* new_enemy = new Monster(new Properties("pink-star", pos.first * 80, pos.second * 80, 34, 30, 5));
+        new_enemy->Load("pink-star-idle", "assets/enemy/Sprites/Pink Star/01-Idle/Idle", 8);
+        new_enemy->Load("pink-star-attack", "assets/enemy/Sprites/Pink Star/07-Attack/Attack", 4);
+        new_enemy->setType(1);
+        enemy.push_back(new_enemy);
+    }
+
+    Monster* enemy_totem = new Monster(new Properties("totem", 78 * 80, 15 * 80, 60, 32, 4));
+    enemy_totem->Load("totem-idle", "assets/enemy/Sprites/Totems/Head 1/Idle 1/idle", 1);
+    enemy_totem->Load("totem-attack", "assets/enemy/Sprites/Totems/Head 1/Attack 1/attack", 6);
+    enemy_totem->setType(2);
+    enemy.push_back(enemy_totem);
+
+    ball = new Object(new Properties("ball-idle", 29 * 80, -3 * 80, 16, 16, 5));
     ball->Load("ball-idle", "assets/trap/Cannon/Cannon Ball Idle/ball", 1);
     ball->Load("ball-destroy", "assets/trap/Cannon/Cannon Ball Destroyed/ball-destroy", 3);
-    Object* exploring = new Object(new Properties("exploring", 10 * 80, 14 * 80, 54, 60, 5));
+    Object* exploring = new Object(new Properties("exploring", 28 * 80, 5 * 80, 54, 60, 5));
     exploring->Load("exploring", "assets/trap/Cannon/Cannon Ball Explosion/explore", 7);
     exploring->setType(3);
     ball->addExploration(exploring);
@@ -341,7 +596,13 @@ void Engine::Init_Level(int level) {
     helm->setType(3);
     decor_things.push_back(helm);
 
+    sword = new Item(new Properties("sword", 22 * 80, 16 * 80, 20, 20, 5));
+    sword->Load("sword", "assets/player/Sprites/Sword/21-Sword Idle/Sword Idle", 8);
+    sword->setType(5);
+
     // add item
+    player->addSword(sword);
+    player->addBottle(bottle);
     player->addBox(box);
     player->addItem(coin);
     player->addEnemy(enemy);
@@ -361,7 +622,7 @@ void Engine::Update() {
             t->Update(dt);
         }
     }
-    if(m_starting && !game_over_screen) {
+    if(m_starting && !game_over_screen && !menu_screen) {
         for(int LEVEL = 1; LEVEL <= 3; LEVEL++) {
             if(player->getLevel() == LEVEL && !loaded_level[LEVEL - 1]) {
                 Init_Level(LEVEL);
@@ -400,6 +661,13 @@ void Engine::Update() {
                 ++it;
             }
         }
+        for(auto it = bottle.begin(); it != bottle.end(); /* no increment here */) {
+            if((*it)->isToBeDestroyed()) {
+                it = bottle.erase(it);
+            } else {
+                ++it;
+            }
+        }
         if(!sword->isToBeDestroyed()) {
             sword->Update(dt);
         }
@@ -413,6 +681,9 @@ void Engine::Update() {
             t->Update(dt);
         }
         for(auto t : coin) {
+            t->Update(dt);
+        }
+        for(auto t : bottle) {
             t->Update(dt);
         }
         health_bar->Update(dt);
@@ -488,14 +759,15 @@ std::vector<std::pair<int, int>> icon_pos = {
 
 void Engine::GameOverScreen() {
     if(game_over_screen == false) return;
+    int bonus = Camera::GetInstance()->GetPostision().X;
     for(int i = 0; i < NUM_OF_BANNER; i++) {
         std::string game_over_banner = "banner-" + banner_text[i];
-        TextureManager::GetInstance()->DrawMenu(game_over_banner, banner[i].first, banner[i].second, 32, 32, 5);
+        TextureManager::GetInstance()->DrawMenu(game_over_banner, banner[i].first + bonus, banner[i].second, 32, 32, 5);
     }
 
     for(int i = 0; i < NUM_OF_PAPER; i++) {
         std::string game_over_paper = "paper-" + paper_text[i];
-        TextureManager::GetInstance()->DrawMenu(game_over_paper, paper[i].first - 3, paper[i].second, 32, 32, 5);    
+        TextureManager::GetInstance()->DrawMenu(game_over_paper, paper[i].first - 3 + bonus, paper[i].second, 32, 32, 5);    
     }
 
     std::string score = "score:" + std::to_string(score_game);
@@ -506,33 +778,33 @@ void Engine::GameOverScreen() {
             text_name = "text-" + std::to_string(score[i] - '0' + 26);
         }
         if(score[i] == '0') text_name = "text-36";
-        TextureManager::GetInstance()->DrawMenu(text_name, 1200 + i * 60, 700, 5, 6, 10);
+        TextureManager::GetInstance()->DrawMenu(text_name, 1200 + i * 60 + bonus, 700, 5, 6, 10);
     }
 
     for(int i = 0; i < NUM_OF_BANNER_P; i++) {
         std::string game_over_paper = "banner-p-" + banner_text_p[i];
-        TextureManager::GetInstance()->DrawMenu(game_over_paper, banner_p[i].first - 3 - 30 + 15, banner_p[i].second, 32, 32, 8);    
+        TextureManager::GetInstance()->DrawMenu(game_over_paper, banner_p[i].first - 3 - 30 + 15 + bonus, banner_p[i].second, 32, 32, 8);    
     }
 
     std::string game_text = "game";
     for(int i = 0; i < (int) game_text.size(); i++) {
-        std::string text_name = "text-" + std::to_string(game_text[i] - 'a' + 1);
-        TextureManager::GetInstance()->DrawMenu(text_name, 1250 + i * 54 - 70 + 12, 395, 5, 6, 9);
+        std::string text_name = "big-text-" + std::to_string(game_text[i] - 'a' + 1);
+        TextureManager::GetInstance()->DrawMenu(text_name, 1250 + i * 50 - 70 + 12 + bonus, 395, 10, 11, 5);
     }
     std::string over_text = "over";
     for(int i = 0; i < (int) over_text.size(); i++) {
-        std::string text_name = "text-" + std::to_string(over_text[i] - 'a' + 1);
+        std::string text_name = "big-text-" + std::to_string(over_text[i] - 'a' + 1);
         if(over_text[i] == '!') text_name = "46";
-        TextureManager::GetInstance()->DrawMenu(text_name, 1630 + i * 54 - 120 + 12, 355, 5, 6, 9);
+        TextureManager::GetInstance()->DrawMenu(text_name, 1630 + i * 50 - 120 + 12 + bonus, 355, 10, 11, 5);
     }
     for(int i = 0; i < 2; i++) {
         std::string exit_banner_name = "banner-p-" + exit_banner_t[i];
-        TextureManager::GetInstance()->DrawMenu(exit_banner_name, exit_banner[i].first - 3 - 30 + 15, exit_banner[i].second, 32, 32, 6);
+        TextureManager::GetInstance()->DrawMenu(exit_banner_name, exit_banner[i].first - 3 - 30 + 15 + bonus, exit_banner[i].second, 32, 32, 6);
     }
     std::string exit_text = "exit";
     for(int i = 0; i < (int) exit_text.size(); i++) {
         std::string exit_text_t = "text-" + std::to_string(exit_text[i] - 'a' + 1);
-        TextureManager::GetInstance()->DrawMenu(exit_text_t, 1910 - 180 + i * 36 - 70 + 12, 1058, 5, 6, 6);
+        TextureManager::GetInstance()->DrawMenu(exit_text_t, 1910 - 180 + i * 36 - 70 + 12 + bonus, 1058, 5, 6, 6);
 
         SDL_Rect boxxx = {1910 - 180 + i * 36 - 70 + 12, 1058, 5 * 6, 6 * 6};
         SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &boxxx);
@@ -550,7 +822,7 @@ void Engine::GameOverScreen() {
 
     for(int i = 0; i < 3; i++) {
         std::string yellow_button_name = "yellow-button-" + yellow_button_text[i];
-        TextureManager::GetInstance()->DrawMenu(yellow_button_name, yellow_button[i].first, yellow_button[i].second, 14, 14, 5);                
+        TextureManager::GetInstance()->DrawMenu(yellow_button_name, yellow_button[i].first + bonus, yellow_button[i].second, 14, 14, 5);                
     
         SDL_Rect boxxx = {yellow_button[i].first, yellow_button[i].second, 14 * 5, 14 * 5};
         SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &boxxx);
@@ -574,12 +846,12 @@ void Engine::GameOverScreen() {
 
     for(int i = 0; i < 2; i++) {
         std::string icon_name = "icon-" + icon_td[i];
-        TextureManager::GetInstance()->DrawMenu(icon_name, icon_pos[i].first, icon_pos[i].second, 8, 6, 5);
+        TextureManager::GetInstance()->DrawMenu(icon_name, icon_pos[i].first + bonus, icon_pos[i].second, 8, 6, 5);
     }
 }
 
 void Engine::mainMenu() {
-    
+
 }
 
 bool Engine::Clean() {
@@ -599,17 +871,25 @@ bool Engine::Clean() {
 
 void Engine::Render() {
     SDL_RenderClear(m_Renderer);
+    darker = (game_over_screen == true || menu_screen == true);
     if(m_starting) {
-        if(game_over_screen == true) {
-            darker = true;
-        }
-        else {
-            darker = false;
-        }
         m_LevelMap->Render();
         player->Draw();
         key_level->Draw();
         ship->Draw();
+
+        int bonus = Camera::GetInstance()->GetPostision().X;
+
+        std::string current_score = "score " + std::to_string(score_game);
+
+        for(int i = 0; i < (int) current_score.size(); i++) {
+            std::string text_name = "big-text-" + std::to_string(current_score[i] - 'a' + 1);
+            if(current_score[i] >= '1' && current_score[i] <= '9') {
+                text_name = "big-text-" + std::to_string(current_score[i] - '0' + 26);
+            }
+            if(current_score[i] == '0') text_name = "big-text-36";
+            TextureManager::GetInstance()->Draw(text_name, 500 + i * 60 + bonus, 100, 10, 11, 6);
+        }
 
         for(auto t : enemy) {
             t->Draw();
@@ -634,6 +914,9 @@ void Engine::Render() {
             t->Draw();
         }
         for(auto t : decor_things) {
+            t->Draw();
+        }
+        for(auto t : bottle) {
             t->Draw();
         }
 
@@ -662,6 +945,8 @@ void Engine::Render() {
         GameOverScreen();
         // Quit();
     } 
+    menuGame();
+    highScore();
     Mouse::getInstance()->Draw();
     SDL_RenderPresent(m_Renderer);
 }

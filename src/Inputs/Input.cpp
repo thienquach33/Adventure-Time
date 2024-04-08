@@ -10,8 +10,6 @@ Input::Input() {
 void Input::Listen() {
     SDL_Event event;
 
-    
-
     while(SDL_PollEvent(&event)) {
         switch (event.type)
         {
@@ -58,4 +56,7 @@ void Input::KeyUp() {
 
 void Input::KeyDown() {
     m_KeyStates = SDL_GetKeyboardState(nullptr);
+    if(m_KeyStates[SDL_SCANCODE_ESCAPE]) {
+        Engine::GetInstance()->setMainMenu();
+    }
 }

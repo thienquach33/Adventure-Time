@@ -19,15 +19,12 @@ Object::Object(Properties* props) : Character(props) {
 }
 
 void Object::Draw() {
-    if(m_type == 3 && m_exploring) {
-        m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
+    if(m_type == 3) {
+        if(m_exploring) {
+            m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
+        }
     }
-    if(m_type == 2 && active_bomb) {
-        m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
-    }
-    else if(m_type != 2 && m_type != 3) {
-        m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
-    }
+    else m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
     Vector2D cam = Camera::GetInstance()->GetPostision();
     SDL_Rect box = m_Collider->Get();
     box.x -= cam.X;
@@ -104,17 +101,6 @@ void Object::Update(double dt) {
             else m_isFalling = false;  
 
             m_RigidBody->Update(dt);
-            m_LastSafePosition.X = m_Transform->X;
-            m_Transform->X += m_RigidBody->Position().X;
-            m_Collider->Set(m_Transform->X, m_Transform->Y, m_Width * m_scale, m_Height * m_scale);
-
-            if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
-                // m_tobeDestroy = true;
-                m_Transform->X = m_LastSafePosition.X;
-            }   
-
-
-            m_RigidBody->Update(dt);
             m_LastSafePosition.Y = m_Transform->Y;
             m_Transform->Y += m_RigidBody->Position().Y;
             m_Collider->Set(m_Transform->X, m_Transform->Y, m_Width * m_scale, m_Height * m_scale); 
@@ -174,13 +160,12 @@ void Object::AnimationState(double dt) {
         if(m_isGrounded && active_bomb) {
             
             SetAnimation("ball-destroy", 3, 150, 0);
-            explore->respawn(m_Transform->X - 50, m_Transform->Y - 100);
             explore->setExploring(true);
             m_DestroyTimer += dt;
             if(m_DestroyTimer >= 80.0f) {
                 explore->setExploring(false);
                 m_DestroyTimer = 0;
-                respawn(10 * 80, 6 * 80);
+                respawn(29 * 80, -3 * 80);
             }
         }
     }

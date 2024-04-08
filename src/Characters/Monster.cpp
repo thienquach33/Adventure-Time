@@ -38,10 +38,14 @@ void Monster::Draw() {
     m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
 
     Vector2D cam = Camera::GetInstance()->GetPostision();
-    // SDL_Rect box = m_Collider->Get();
-    // box.x -= cam.X;
-    // box.y -= cam.Y;
-    // SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
+    SDL_Rect box = m_Collider->Get();
+    box.x -= cam.X;
+    box.y -= cam.Y;
+    SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
+
+    for(auto t : bullet) {
+        t->Draw();
+    }
 }
 
 void Monster::Load(std::string name_animation, std::string path_animation, int num, SDL_RendererFlip flip) {
@@ -152,32 +156,102 @@ void Monster::Update(double dt) {
         }
     }
     else if(type == 1) {
-    
+        SetAnimation("pink-star-idle", 8, 100);
+        m_RigidBody->UnSetForce();
+        m_isRunning = false;
+        switch(m_State) {
+        case State::IdleLeft:
+            m_IdleTime += dt;
+            if(m_IdleTime >= 120.0f) { // Adjust the time as needed
+                m_State = State::MovingLeft;
+                m_IdleTime = 0.0;
+            }
+            break;
+        case State::IdleRight:
+            m_IdleTime += dt;
+            if(m_IdleTime >= 120.0f) { // Adjust the time as needed
+                m_State = State::MovingRight;
+                m_IdleTime = 0.0;
+            }
+            break;
+        case State::MovingLeft:
+            m_isRunning = true;
+            m_RigidBody->ApplyForceX(FORWARD * 2.0f); // Adjust the force as needed
+            m_MoveTime += dt;
+            if(m_MoveTime >= 120.0f) { // Adjust the time as needed
+                m_State = State::IdleRight;
+                m_MoveTime = 0.0;
+                m_Flip = SDL_FLIP_HORIZONTAL;
+            }
+            break;
+        case State::MovingRight:
+            m_isRunning = true;
+            m_RigidBody->ApplyForceX(BACKWARD * 2.0f); // Adjust the force as needed
+            m_MoveTime += dt;
+            if(m_MoveTime >= 120.0f) { // Adjust the time as needed
+                m_State = State::IdleLeft;
+                m_MoveTime = 0.0;
+                m_Flip = SDL_FLIP_NONE;
+            }
+            break;
+        }
+    }
+    else if(type == 2) {
+        SetAnimation("totem-attack", 6, 120, 0);
+        
+        if(m_AttackTime >= 200.0f) {
+            Monster* wood_spike = new Monster(new Properties("wood-spike", m_Transform->X + 30, m_Transform->Y + 80, 16, 16, 3));
+            wood_spike->Load("wood-spike-idle", "assets/enemy/Sprites/Totems/Wood Spike/Idle/idle", 1);
+            wood_spike->setType(3);
+            bullet.push_back(wood_spike);
+            m_AttackTime = 0;
+        }
+        m_AttackTime += dt;
+    }
+    else if(type == 3) {
+        m_RigidBody->UnSetForce();
+        SetAnimation("wood-spike-idle", 1, 100, 0);
+        m_RigidBody->ApplyForceX(FORWARD * 3.5f); // Adjust the force as needed
+        m_AttackTime += dt;
+        if(m_AttackTime >= 200.0f) {
+            m_tobeDestroy = true;
+            m_AttackTime = 0;
+        }
     }
     if(m_RigidBody->Velocity().Y > 0 && !m_isGrounded) m_isFalling = true;
-        else m_isFalling = false;
+    else m_isFalling = false;
 
-    // move_x
-    m_RigidBody->Update(dt);
-    m_LastSafePosition.X = m_Transform->X;
-    m_Transform->X += m_RigidBody->Position().X;
-    m_Collider->Set(m_Transform->X + 10 * 5, m_Transform->Y + 5 * 5, 20 * 5, 20 * 5);
+    if(type != 3) {
 
-    if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
-        m_Transform->X = m_LastSafePosition.X;
-    }
+        // move_x
+        m_RigidBody->Update(dt);
+        m_LastSafePosition.X = m_Transform->X;
+        m_Transform->X += m_RigidBody->Position().X;
+        m_Collider->Set(m_Transform->X + 10 * 5, m_Transform->Y + 5 * 5, 20 * 5, 20 * 5);
 
-    m_RigidBody->Update(dt);
-    m_LastSafePosition.Y = m_Transform->Y;
-    m_Transform->Y += m_RigidBody->Position().Y;
-    m_Collider->Set(m_Transform->X + 10 * 5, m_Transform->Y + 5 * 5, 20 * 5, 20 * 5);
+        if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
+            m_Transform->X = m_LastSafePosition.X;
+        }
 
-    if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
-        m_isGrounded = true;
-        m_Transform->Y = m_LastSafePosition.Y;
+        m_RigidBody->Update(dt);
+        m_LastSafePosition.Y = m_Transform->Y;
+        m_Transform->Y += m_RigidBody->Position().Y;
+        m_Collider->Set(m_Transform->X + 10 * 5, m_Transform->Y + 5 * 5, 20 * 5, 20 * 5);
+
+        if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
+            m_isGrounded = true;
+            m_Transform->Y = m_LastSafePosition.Y;
+        }
+        else {
+            m_isGrounded = false;
+        }
     }
     else {
-        m_isGrounded = false;
+        m_RigidBody->SetGravity(0);
+        m_RigidBody->Update(dt);
+        m_LastSafePosition.X = m_Transform->X;
+        m_Transform->X += m_RigidBody->Position().X;
+        m_Collider->Set(m_Transform->X, m_Transform->Y, m_Width * m_scale, m_Height * m_scale);
     }
 
     if(heal_of_enemy == 0) {
@@ -189,6 +263,19 @@ void Monster::Update(double dt) {
 
     AnimationState(dt);
     m_Animation->Update();
+
+    for(auto it = bullet.begin(); it != bullet.end(); /* no increment here */) {
+        if((*it)->m_tobeDestroy) {
+            delete(*it);
+            it = bullet.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    for(auto t : bullet) {
+        t->Update(dt);
+    }
 }
 
 void Monster::AnimationState(double dt) {
@@ -237,7 +324,9 @@ void Monster::AnimationState(double dt) {
         }
     }
     else if(type == 1) {
-
+        if(m_isRunning) {
+            SetAnimation("pink-star-attack", 4, 100);
+        }
     }
 }
 

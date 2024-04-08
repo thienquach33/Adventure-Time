@@ -41,6 +41,8 @@ class Monster : public Character {
         Object* getBall() { return m_ball; }
         std::vector<Effect*> getEffect() { return m_Effect; }
 
+        virtual std::vector<Monster*> getBullet() { return bullet; }
+
         int attackStartTicks = 0;
 
         bool isToBeDestroyed() const {
@@ -50,6 +52,8 @@ class Monster : public Character {
         virtual void setHit(bool m_hit) { m_isHitting = m_hit; }
 
         SDL_Rect getCollider() { return m_Collider->Get(); }
+
+        virtual int getType() { return type; }
     private :
         enum class State {
             MovingLeft,
@@ -90,6 +94,7 @@ class Monster : public Character {
         int m_AttackCount = 0;
 
         std::vector<Effect*> m_Effect;
+        std::vector<Monster*> bullet;
         Collider* m_Collider;
         Collider* m_Trap;
         std::vector<Object*> m_box;

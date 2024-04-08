@@ -32,6 +32,9 @@ void TextureManager::Draw(std::string id, double x, double y, int width, int hei
     if(Engine::GetInstance()->darker == true) {
         SDL_SetTextureColorMod(texture, 128, 128, 128); // 50% brightness
     }
+    else {
+        SDL_SetTextureColorMod(texture, 255, 255, 255); // 50% brightness
+    }
     SDL_RenderCopyEx(Engine::GetInstance()->getRenderer(), texture, &srcRect, &dstRect, 0 /*angle*/, nullptr, flip /*lat*/);
 }
 
@@ -76,6 +79,9 @@ void TextureManager::DrawTile(std::string tilesetID, int tileSize, int x, int y,
     SDL_Texture* texture = m_TextureMap[tilesetID];
     if(Engine::GetInstance()->darker == true) {
         SDL_SetTextureColorMod(texture, 128, 128, 128); // 50% brightness
+    }
+    else {
+        SDL_SetTextureColorMod(texture, 255, 255, 255); // 50% brightness
     }
     SDL_RenderCopyEx(Engine::GetInstance()->getRenderer(), texture, &srcRect, &dstRect, 0, nullptr, flip);
 }

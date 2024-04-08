@@ -16,7 +16,7 @@ Button::Button(Properties* props) : Character(props) {
 }
 
 void Button::Draw() {
-    m_Animation->DrawButton(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
+    m_Animation->DrawButton(m_Transform->X + Camera::GetInstance()->GetPostision().X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
 
     Vector2D cam = Camera::GetInstance()->GetPostision();
     SDL_Rect box = m_Collider->Get();
@@ -40,11 +40,15 @@ void Button::SetAnimation(std::string animation_name, int num, int speed, int de
 
 void Button::Update(double dt) {
     std::string name_button;
-    if(type == 0) name_button = "button-play";
+    if(type == 0) {
+        name_button = "button-play";
+        if(Engine::GetInstance()->continue_screen == true) type = 5;
+    }
     if(type == 1) name_button = "button-setting";
     if(type == 2) name_button = "button-menu";
     if(type == 3) name_button = "button-exit";
     if(type == 4) name_button = "button-pause";
+    if(type == 5) name_button = "button-continue";
 
     m_Collider->Set(m_Transform->X, m_Transform->Y, m_Width * m_scale, m_Height * m_scale);
     SDL_Rect temp = m_Collider->Get();
@@ -52,7 +56,7 @@ void Button::Update(double dt) {
     if(SDL_HasIntersection(&temp, &temp_mouse)) {
         if(Mouse::getInstance()->isClicked()) {
             SetAnimation(name_button, 3, 100, 0);
-            if(type == 0) {
+            if(type == 0 || type == 5) {
                 Engine::GetInstance()->setStarting(true);
             }
             else if(type == 3) {

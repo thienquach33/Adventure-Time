@@ -43,8 +43,6 @@ Sprites::Sprites(Properties* props) : Character(props) {
 }
 
 void Sprites::Draw() {
-    TextureManager::GetInstance()->LoadText("Score: " + std::to_string(Engine::GetInstance()->score_game), {0, 0, 255, 255}, m_font);
-    TextureManager::GetInstance()->DrawText("Score: " + std::to_string(Engine::GetInstance()->score_game), 200, 200, 500, 100);
     m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
     Vector2D cam = Camera::GetInstance()->GetPostision();
     // SDL_Rect box = m_Collider->Get();
@@ -75,6 +73,7 @@ void Sprites::SetAnimation(std::string animation_name, int num, int speed, int d
 }
 
 void Sprites::Respawn(){
+    haveSword = false;
     m_Transform->X = 8 * 80;
     m_Transform->Y = 15 * 80;
     m_dead = false;
@@ -96,8 +95,9 @@ void Sprites::Update(double dt) {
 
     m_wasGrounded = m_isGrounded;
 
-    if(m_Transform->X >= 28 * 80 && m_Transform->X <= 30 * 80) {
+    if(m_Transform->Y >= 11 * 80 || (m_Transform->X >= 22 * 80 && m_Transform->X <= 24 * 80)) {
         m_JumpForce = 13.0f;
+        m_RigidBody->SetGravity(4.0f);
     }
 
     for(auto it = m_heal.begin(); it != m_heal.end(); /* no increment here */) {
@@ -119,6 +119,13 @@ void Sprites::Update(double dt) {
     for(auto it = m_item.begin(); it != m_item.end(); /* no increment here */) {
         if((*it)->isToBeDestroyed()) {
             it = m_item.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    for(auto it = m_bottle.begin(); it != m_bottle.end(); /* no increment here */) {
+        if((*it)->isToBeDestroyed()) {
+            it = m_bottle.erase(it);
         } else {
             ++it;
         }
@@ -243,33 +250,39 @@ void Sprites::Update(double dt) {
 
     // check attack enemy 
     for(auto &t : m_enemy) {
-        auto sword_collider = m_Collider->Get();
-        if(m_Flip == SDL_FLIP_NONE)
-            sword_collider.w += 80;
-        else 
-            sword_collider.x -= 80;
-        auto crab_attack = t->getCollider();
-        crab_attack.x -= 80;
-        crab_attack.w += 280;
-        if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), crab_attack) && (t->getAttack() == true)) {
-            m_dead = true;
-            break;
+        if(t->getType() == 0) {
+            auto sword_collider = m_Collider->Get();
+            if(m_Flip == SDL_FLIP_NONE)
+                sword_collider.w += 80;
+            else 
+                sword_collider.x -= 80;
+            auto crab_attack = t->getCollider();
+            crab_attack.x -= 80;
+            crab_attack.w += 280;
+            if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), crab_attack) && (t->getAttack() == true)) {
+                m_dead = true;
+                break;
+            }
+            if(CollisionHandler::GetInstance()->checkCollision(sword_collider, t->getCollider()) && m_isAttacking) {
+                t->setHit(true);
+            }
+            else {
+                t->setHit(false);
+            }
         }
-        if(CollisionHandler::GetInstance()->checkCollision(sword_collider, t->getCollider()) && m_isAttacking) {
-            t->setHit(true);
+        else if(t->getType() == 1) {
+            if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getCollider())) {
+                m_dead = true;
+            }
         }
-        else {
-            t->setHit(false);
+        for(auto bl : t->getBullet()) {
+            if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), bl->getCollider())) {
+                m_dead = true;
+            }
         }
     }
 
-    if(!bomb->isFalling() && m_recall >= 300.0f) {
-        bomb->active(true);
-        bomb->respawn(m_Transform->X - 100, m_Transform->Y - 500);
-        m_recall = 0;
-    }
-    m_recall += dt;
-    bomb->active(false);
+    bomb->active(true);
 
     if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), bomb->getExploration()->getCollider())
     && bomb->getExploration()->getExploring()) {
@@ -311,6 +324,16 @@ void Sprites::Update(double dt) {
                 t->eat();
             }
         }
+        for(auto &t : m_bottle) {
+            if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getCollider())) {
+                Mix_PlayChannel(-1, m_getCoinSound, 0);
+                t->eat();
+                if(t->getType() == 6) {
+                    m_JumpForce = 25.0f;
+                    m_RigidBody->SetGravity(6.0f);
+                }
+            }
+        }
 
         if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), m_sword->getCollider())) {
             haveSword = true;
@@ -327,12 +350,9 @@ void Sprites::Update(double dt) {
     if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), m_portal_gate->getCollider())) {
         m_nextLevelTime += dt;
         m_nextLevel = true;
-        m_JumpForce = 22.0f;
-        m_RigidBody->SetGravity(5.0f);
         if(m_nextLevelTime >= 200.0f) {
-            m_nextLevel = false;
-            m_nextLevelTime = 0;
-            level_cur++;
+            m_Transform->X = 45 * 80;
+            m_Transform->Y = 7 * 80;
         }
     }
     else {

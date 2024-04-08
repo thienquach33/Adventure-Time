@@ -74,6 +74,14 @@ void Item::Update(double dt) {
         SetAnimation("sword", 8, 100);
         m_Collider->Set(m_Transform->X, m_Transform->Y, m_Width * m_scale, m_Height * m_scale);
     }
+    else if(m_type == 6) {
+        SetAnimation("green-bottle", 7, 100);
+        m_Collider->Set(m_Transform->X, m_Transform->Y, m_Width * m_scale, m_Height * m_scale);
+
+        if(m_isEtten) {
+            m_EatTimer += dt;
+        }
+    }
 
     AnimationState();
     m_Animation->Update();
@@ -81,7 +89,7 @@ void Item::Update(double dt) {
 }
 
 void Item::AnimationState() {
-    if(m_type == 0 || m_type == 2) {
+    if(m_type == 0 || m_type == 2 || m_type == 6) {
         if(m_isEtten) {
             if(add_point == false) {
                 Engine::GetInstance()->score_game += (m_type == 0) ? 10 : 30;

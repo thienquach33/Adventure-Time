@@ -28,6 +28,7 @@ class Engine {
         void menuGame();
         void GameOverScreen();
         void mainMenu();
+        void highScore();
 
         GameMap* GetMap() { return m_LevelMap; }
 
@@ -38,6 +39,10 @@ class Engine {
         void setStarting(bool start) { m_starting = start; }
         void setRunning(bool run) { m_isRunning = run; }
         void SetGameOver(bool game_over) { game_over_screen = game_over; }
+        void setMainMenu() { 
+            if(!m_starting || game_over_screen) return;
+            menu_screen ^= 1; 
+        }
 
         int cur_level = 0;
         std::vector<bool> loaded_level = {false, false, false};
@@ -49,6 +54,7 @@ class Engine {
 
         std::multiset<int, std::greater<int>> HighScore;
 
+        bool continue_screen = false;
     private:
         Engine() {}
         GameMap* m_LevelMap;
@@ -56,7 +62,7 @@ class Engine {
         bool m_starting = false;
         bool game_over_screen = false;
         bool high_score_screen = false;
-        bool menu_screen = true;
+        bool menu_screen = false;
         SDL_Window* m_Window;
         SDL_Renderer* m_Renderer;
         static Engine* s_Instance;
