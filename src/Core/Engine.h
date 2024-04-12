@@ -27,7 +27,7 @@ class Engine {
         void Events();
         void menuGame();
         void GameOverScreen();
-        void mainMenu();
+        void settingMenu();
         void highScore();
 
         GameMap* GetMap() { return m_LevelMap; }
@@ -39,10 +39,23 @@ class Engine {
         void setStarting(bool start) { m_starting = start; }
         void setRunning(bool run) { m_isRunning = run; }
         void SetGameOver(bool game_over) { game_over_screen = game_over; }
+        void setSetting(bool setting) { setting_screen = setting; }
         void setMainMenu() { 
             if(!m_starting || game_over_screen) return;
             menu_screen ^= 1; 
         }
+        void setHighscore() {
+            if(high_score_screen) {
+                high_score_screen = false;
+            }
+        }
+        void setSetting() {
+            if(setting_screen) {
+                setting_screen = false;
+            }
+        }
+
+        bool getSfx() { return sfx; }
 
         int cur_level = 0;
         std::vector<bool> loaded_level = {false, false, false};
@@ -59,10 +72,13 @@ class Engine {
         Engine() {}
         GameMap* m_LevelMap;
         bool m_isRunning;
+        bool sfx = true;
+        bool music = true;
         bool m_starting = false;
         bool game_over_screen = false;
         bool high_score_screen = false;
         bool menu_screen = false;
+        bool setting_screen = false;
         SDL_Window* m_Window;
         SDL_Renderer* m_Renderer;
         static Engine* s_Instance;

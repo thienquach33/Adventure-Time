@@ -18,11 +18,13 @@ Button::Button(Properties* props) : Character(props) {
 void Button::Draw() {
     m_Animation->DrawButton(m_Transform->X + Camera::GetInstance()->GetPostision().X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
 
+    /*
     Vector2D cam = Camera::GetInstance()->GetPostision();
     SDL_Rect box = m_Collider->Get();
     box.x -= cam.X;
     box.y -= cam.Y;
     SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
+    */
 }
 
 void Button::Load(std::string name_animation, std::string path_animation, int num, SDL_RendererFlip flip) {
@@ -54,7 +56,7 @@ void Button::Update(double dt) {
     SDL_Rect temp = m_Collider->Get();
     SDL_Rect temp_mouse = Mouse::getInstance()->getPoint();
     if(SDL_HasIntersection(&temp, &temp_mouse)) {
-        if(Mouse::getInstance()->isClicked()) {
+        if(Mouse::getInstance()->oneClickedCheck()) {
             SetAnimation(name_button, 3, 100, 0);
             if(type == 0 || type == 5) {
                 Engine::GetInstance()->setStarting(true);
@@ -64,6 +66,9 @@ void Button::Update(double dt) {
             }
             else if(type == 4) {
                 Engine::GetInstance()->esc_menu = true;
+            }
+            else if(type == 1) {
+                Engine::GetInstance()->setSetting(true);
             }
         }
         else { 

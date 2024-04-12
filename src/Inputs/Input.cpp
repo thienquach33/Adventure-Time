@@ -58,5 +58,7 @@ void Input::KeyDown() {
     m_KeyStates = SDL_GetKeyboardState(nullptr);
     if(m_KeyStates[SDL_SCANCODE_ESCAPE]) {
         Engine::GetInstance()->setMainMenu();
+        Engine::GetInstance()->setHighscore();
+        Engine::GetInstance()->setSetting();
     }
 }

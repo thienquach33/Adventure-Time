@@ -18,7 +18,18 @@ class Mouse {
         bool isClicked() {
             return SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT);
         }
-    private : 
+        bool oneClickedCheck() {
+            if(isClicked() && !clicked) {
+                clicked = true;
+                return true;
+            }
+            else if(!isClicked()) {
+                clicked = false;
+            }
+            return false;
+        }
+    private :
+        bool clicked = false; 
         Mouse();
         SDL_Rect srect, point;
         static Mouse* s_Instance;

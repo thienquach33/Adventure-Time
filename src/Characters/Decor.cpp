@@ -21,10 +21,12 @@ Decor::Decor(Properties* props) : Character(props) {
 void Decor::Draw() {
     m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
     Vector2D cam = Camera::GetInstance()->GetPostision();
+    /*
     SDL_Rect box = m_Collider->Get();
     box.x -= cam.X;
     box.y -= cam.Y;
     SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
+    */
 }
 
 void Decor::Load(std::string name_animation, std::string path_animation, int num, SDL_RendererFlip flip) {

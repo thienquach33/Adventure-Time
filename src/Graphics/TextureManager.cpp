@@ -27,7 +27,6 @@ void TextureManager::Draw(std::string id, double x, double y, int width, int hei
     SDL_Rect srcRect = {0, 0, width, height};
     Vector2D cam = Camera::GetInstance()->GetPostision();
     SDL_Rect dstRect = {x - cam.X, y - cam.Y, (double) width * scale, (double) height * scale};
-    // SDL_SetTextureColorMod(texture, 128, 128, 128); // 50% brightness
     SDL_Texture* texture = m_TextureMap[id];
     if(Engine::GetInstance()->darker == true) {
         SDL_SetTextureColorMod(texture, 128, 128, 128); // 50% brightness
@@ -43,8 +42,8 @@ void TextureManager::DrawMenu(std::string id, double x, double y, int width, int
     SDL_Rect srcRect = {0, 0, width, height};
     Vector2D cam = Camera::GetInstance()->GetPostision();
     SDL_Rect dstRect = {x - cam.X, y - cam.Y, (double) width * scale, (double) height * scale};
-    // SDL_SetTextureColorMod(texture, 128, 128, 128); // 50% brightness
     SDL_Texture* texture = m_TextureMap[id];
+    SDL_SetTextureColorMod(texture, 255, 255, 255); // 50% brightness
     SDL_RenderCopyEx(Engine::GetInstance()->getRenderer(), texture, &srcRect, &dstRect, 0 /*angle*/, nullptr, flip /*lat*/);
 }
 

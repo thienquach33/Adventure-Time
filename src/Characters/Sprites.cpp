@@ -166,19 +166,21 @@ void Sprites::Update(double dt) {
         m_RigidBody->UnSetForce();
         m_isAttacking = 3;
     }
-    if(!m_isFalling && Input::getInstance()->getKeyDown(SDL_SCANCODE_R)) {
-        m_RigidBody->UnSetForce();
-        m_isAttacking = 4;
-    }
 
     // jumping
-    if(Input::getInstance()->getKeyDown(SDL_SCANCODE_SPACE) && m_isGrounded && (!(m_is_on_ship && ship->moving()))) {
-        Mix_PlayChannel(-1, m_jumpSound, 0);
+    if(Input::getInstance()->getKeyDown(SDL_SCANCODE_W) && m_isGrounded && (!(m_is_on_ship && ship->moving()))) {
+        int cur_sfx = Mix_PlayChannel(-1, m_jumpSound, 0);
+        if(Engine::GetInstance()->getSfx()) {
+            Mix_Resume(cur_sfx);
+        }
+        else {
+            Mix_Pause(cur_sfx);
+        }
         m_isJumping = true;
         m_isGrounded = false;
         m_RigidBody->ApplyForceY(FORWARD * m_JumpForce);
     }
-    if(Input::getInstance()->getKeyDown(SDL_SCANCODE_SPACE) && m_isJumping && m_JumpTime > 0){
+    if(Input::getInstance()->getKeyDown(SDL_SCANCODE_W) && m_isJumping && m_JumpTime > 0){
         m_JumpTime -= dt;
         m_RigidBody->ApplyForceY(FORWARD * m_JumpForce);
     }
@@ -319,14 +321,26 @@ void Sprites::Update(double dt) {
 
         // check get coin
         for(auto &t : m_item) {
-            if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getCollider())) {
-                Mix_PlayChannel(-1, m_getCoinSound, 0);
+            if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getCollider())) {\
+                int cur_sfx = Mix_PlayChannel(-1, m_getCoinSound, 0);
+                if(Engine::GetInstance()->getSfx()) {
+                    Mix_Resume(cur_sfx);
+                }
+                else {
+                    Mix_Pause(cur_sfx);
+                }
                 t->eat();
             }
         }
         for(auto &t : m_bottle) {
             if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getCollider())) {
-                Mix_PlayChannel(-1, m_getCoinSound, 0);
+                int cur_sfx = Mix_PlayChannel(-1, m_getCoinSound, 0);
+                if(Engine::GetInstance()->getSfx()) {
+                    Mix_Resume(cur_sfx);
+                }
+                else {
+                    Mix_Pause(cur_sfx);
+                }
                 t->eat();
                 if(t->getType() == 6) {
                     m_JumpForce = 25.0f;
@@ -450,7 +464,13 @@ void Sprites::AnimationState(double dt) {
                 if(!m_heal.empty()) m_heal.back()->eat();
             }
             else {
-                Mix_PlayChannel(-1, m_deadSound, 0);   
+                int cur_sfx = Mix_PlayChannel(-1, m_deadSound, 0);   
+                if(Engine::GetInstance()->getSfx()) {
+                    Mix_Resume(cur_sfx);
+                }
+                else {
+                    Mix_Pause(cur_sfx);
+                }
                 SetAnimation("player-attacked", 4, 150, 0);
             }
         }

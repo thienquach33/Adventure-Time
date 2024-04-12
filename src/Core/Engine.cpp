@@ -71,6 +71,8 @@ std::vector<std::pair<int, int>> pos_tree = {
     {17 * 80 - 23, 17 * 80}
 };
 
+int gameMusicChannel = -1;
+
 bool Engine::Init() {
     // init SDL
     if(SDL_Init(SDL_INIT_VIDEO) != 0 && IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG) != 0) return false;
@@ -82,14 +84,16 @@ bool Engine::Init() {
     // init Mix
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 128);
     gameMusic = Mix_LoadWAV("assets/sounds/music_game.wav");
-    Mix_PlayChannel(-1, gameMusic, -1);
+    gameMusicChannel = Mix_PlayChannel(-1, gameMusic, -1);
     gameOver = Mix_LoadWAV("assets/sounds/round_end.wav");
+    Mix_Volume(-1, MIX_MAX_VOLUME / 2); // 50% volume
+
 
     TTF_Init();
     font = TTF_OpenFont("assets/fonts/Stacked pixel.ttf", 30);
 
     // create player
-    player = new Sprites(new Properties("player-idle", 69 * 80, 14 * 80, 64, 40, 5));
+    player = new Sprites(new Properties("player-idle", 8 * 80, 15 * 80, 64, 40, 5));
     
     // no sword    
     player->Load("player-idle", "assets/player/Sprites/Captain Clown Nose/Captain Clown Nose without Sword/01-Idle/Idle", 5);
@@ -193,7 +197,7 @@ bool Engine::Init() {
         TextureManager::GetInstance()->Load(game_over_banner, name_path);
     }
 
-    for(int i = 0; i < 9; i++) {
+    for(int i = 0; i < 12; i++) {
         std::string game_over_banner = "paper-" + std::to_string(i);
         std::string name_path = "assets/ui/Orange Paper/paper-" + std::to_string(i) + ".png";
         TextureManager::GetInstance()->Load(game_over_banner, name_path);    
@@ -250,6 +254,12 @@ bool Engine::Init() {
         std::string text_name = "prefabs-" + std::to_string(i);
         std::string name_path = "assets/ui/Prefabs/" + std::to_string(i) + ".png";
         TextureManager::GetInstance()->Load(text_name, name_path);
+    }
+
+    for(int i = 1; i <= 10; i++) {
+        std::string slider_name = "slider-" + std::to_string(i);
+        std::string name_path = "assets/ui/Sliders/" + std::to_string(i) + ".png";
+        TextureManager::GetInstance()->Load(slider_name, name_path);
     }
 
     SDL_Surface* surface = IMG_Load("assets/ui/menu_screen.png");
@@ -386,13 +396,10 @@ void Engine::menuGame() {
         std::string green_button_name = "green-button-" + green_button_text[i];
         TextureManager::GetInstance()->DrawMenu(green_button_name, green_button[i].first - 50 + bonus, green_button[i].second, 14, 14, 5);
 
-        SDL_Rect boxxx = {green_button[i].first - 50, green_button[i].second, 14 * 5, 14 * 5};
-        SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &boxxx);
-
         SDL_Rect temp = {green_button[i].first - 50, green_button[i].second, 14 * 5, 14 * 5};
         SDL_Rect temp_mouse = Mouse::getInstance()->getPoint();
         if(SDL_HasIntersection(&temp, &temp_mouse)) {
-            if(Mouse::getInstance()->isClicked()) {
+            if(Mouse::getInstance()->oneClickedCheck()) {
                 if(i == 4) {
                     menu_screen = false;
                     return;
@@ -404,10 +411,22 @@ void Engine::menuGame() {
                     player->setPos();
                     return;
                 }
+                else if(i == 1) {
+                    menu_screen = false;
+                    setting_screen = true;
+                    return;
+                }
                 else if(i == 2) {
                     high_score_screen = true;
                     menu_screen = false;
                     return;
+                }
+                else if(i >= 5 && i <= 13) {
+                    menu_screen = false;
+                    return;
+                }
+                else if(i == 3) {
+                    system("xdg-open https://www.facebook.com/duck.3305/");
                 }
             }
         }
@@ -426,14 +445,11 @@ void Engine::menuGame() {
 
         if(i == 0 || i == 2) {
 
-            SDL_Rect boxxx = {banner_p_menu_pos[i].first - ((i == 0) ? 15 : 185), banner_p_menu_pos[i].second + 50, 32 * 4, 60};
-            SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &boxxx);
-
             SDL_Rect temp = {banner_p_menu_pos[i].first - ((i == 0) ? 15 : 185), banner_p_menu_pos[i].second + 50, 32 * 4, 60};
             SDL_Rect temp_mouse = Mouse::getInstance()->getPoint();
 
             if(SDL_HasIntersection(&temp, &temp_mouse)) {
-                if(Mouse::getInstance()->isClicked()) {
+                if(Mouse::getInstance()->oneClickedCheck()) {
                     if(i == 2) {
                         m_starting = false;
                         continue_screen = true;
@@ -614,7 +630,16 @@ void Engine::Init_Level(int level) {
     Camera::GetInstance()->SetTarget(player->GetOrigin());
 }
 
+int cur_volume = 2;
+
 void Engine::Update() {
+    if(music == false) {
+        Mix_Pause(gameMusicChannel);
+    }
+    else {
+        Mix_Resume(gameMusicChannel);
+    }
+    Mix_Volume(-1, MIX_MAX_VOLUME * cur_volume * 0.25);
     double dt = Timer::getInstance()->getDeltaTime();
     Mouse::getInstance()->Update();
     if(!m_starting) {
@@ -622,7 +647,7 @@ void Engine::Update() {
             t->Update(dt);
         }
     }
-    if(m_starting && !game_over_screen && !menu_screen) {
+    if(m_starting && !game_over_screen && !menu_screen && !high_score_screen && !setting_screen) {
         for(int LEVEL = 1; LEVEL <= 3; LEVEL++) {
             if(player->getLevel() == LEVEL && !loaded_level[LEVEL - 1]) {
                 Init_Level(LEVEL);
@@ -758,7 +783,7 @@ std::vector<std::pair<int, int>> icon_pos = {
 };
 
 void Engine::GameOverScreen() {
-    if(game_over_screen == false) return;
+    if(game_over_screen == false || high_score_screen) return;
     int bonus = Camera::GetInstance()->GetPostision().X;
     for(int i = 0; i < NUM_OF_BANNER; i++) {
         std::string game_over_banner = "banner-" + banner_text[i];
@@ -806,13 +831,10 @@ void Engine::GameOverScreen() {
         std::string exit_text_t = "text-" + std::to_string(exit_text[i] - 'a' + 1);
         TextureManager::GetInstance()->DrawMenu(exit_text_t, 1910 - 180 + i * 36 - 70 + 12 + bonus, 1058, 5, 6, 6);
 
-        SDL_Rect boxxx = {1910 - 180 + i * 36 - 70 + 12, 1058, 5 * 6, 6 * 6};
-        SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &boxxx);
-
         SDL_Rect temp = {1910 - 180 + i * 36 - 70 + 12, 1058, 5 * 6, 6 * 5};
         SDL_Rect temp_mouse = Mouse::getInstance()->getPoint();
         if(SDL_HasIntersection(&temp, &temp_mouse)) {
-            if(Mouse::getInstance()->isClicked()) {
+            if(Mouse::getInstance()->oneClickedCheck()) {
                 game_over_screen = false;
                 m_starting = false;
                 return;
@@ -823,14 +845,11 @@ void Engine::GameOverScreen() {
     for(int i = 0; i < 3; i++) {
         std::string yellow_button_name = "yellow-button-" + yellow_button_text[i];
         TextureManager::GetInstance()->DrawMenu(yellow_button_name, yellow_button[i].first + bonus, yellow_button[i].second, 14, 14, 5);                
-    
-        SDL_Rect boxxx = {yellow_button[i].first, yellow_button[i].second, 14 * 5, 14 * 5};
-        SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &boxxx);
 
         SDL_Rect temp = {yellow_button[i].first, yellow_button[i].second, 14 * 5, 14 * 5};
         SDL_Rect temp_mouse = Mouse::getInstance()->getPoint();
         if(SDL_HasIntersection(&temp, &temp_mouse)) {
-            if(Mouse::getInstance()->isClicked()) {
+            if(Mouse::getInstance()->oneClickedCheck()) {
                 if(i == 0) {
                     high_score_screen = true;
                 }
@@ -850,8 +869,155 @@ void Engine::GameOverScreen() {
     }
 }
 
-void Engine::mainMenu() {
+const int NUM_OF_MAIN_MENU_GREEN_BOARD_SM = 20;
 
+std::vector<std::pair<int, int>> banner_green_board_sm = {
+    {1160, 500}, {1320, 500}, {1480, 500}, {1640, 500}, 
+    {1160, 660}, {1320, 660}, {1480, 660}, {1640, 660},
+    {1160, 820}, {1320, 820}, {1480, 820}, {1640, 820}, 
+    {1160, 930}, {1320, 930}, {1480, 930}, {1640, 930}, 
+    {1160, 1100}, {1320, 1100}, {1480, 1100}, {1640, 1100}
+};
+
+std::vector<std::string> green_board_sm = {
+    "1", "2", "2", "3",
+    "4", "5", "5", "6",
+    "4", "5", "5", "6",
+    "7", "8", "8", "9",
+    "10", "11", "11", "12"
+};
+
+const int NUM_OF_YELLOW_PAPER_sm = 16;
+
+std::vector<std::pair<int, int>> yellow_paper_pos_sm = {
+    {1160, 520}, {1320, 520}, {1480, 520}, {1640, 520},
+    {1160, 630}, {1320, 630}, {1480, 630}, {1640, 630},
+    {1160, 730}, {1320, 730}, {1480, 730}, {1640, 730},
+    {1160, 800}, {1320, 800}, {1480, 800}, {1640, 800}
+};
+
+std::vector<std::string> yellow_paper_text_sm = {
+    "1", "2", "2", "3",
+    "4", "5", "5", "6",
+    "7", "8", "8", "9",
+    "10", "11", "11", "12"
+};
+
+std::vector<std::string> yellow_button_sm = {
+    "1", "1"
+};
+
+std::vector<std::pair<int, int>> yellow_button_pos_sm = {
+    {1550, 610}, {1550, 720}
+};
+
+std::vector<std::pair<int, int>> icon_menu_pos_sm = {
+    {1550, 610}, {1550, 720}
+};
+
+std::vector<int> yellow_button_state = {0, 0};
+
+std::vector<std::string> slilder_text = {
+   "1" ,"4", "5", "5", "5", "6", "2"
+};
+
+std::vector<std::pair<int, int>> slider_volume = {
+    {1250, 950},{1300, 950}, {1340, 950}, {1390, 950}, {1430, 950}, {1470, 950}, {1520, 950}
+};
+
+std::vector<std::pair<int, int>> orange_paper_sm = {
+    {1160, 1100}, {1320, 1100}, {1480, 1100}, {1640, 1100}
+};
+
+std::vector<std::string> orange_paper_text_sm = {
+    "9", "10", "10", "11"
+};
+
+void Engine::settingMenu() {
+    if(setting_screen == false) return;
+    int bonus = Camera::GetInstance()->GetPostision().X;
+    for(int i = 0; i < NUM_OF_MAIN_MENU_GREEN_BOARD_SM; i++) {
+        std::string green_board_name = "green-board-" + green_board_sm[i];
+        TextureManager::GetInstance()->DrawMenu(green_board_name, banner_green_board_sm[i].first + bonus + 50, banner_green_board_sm[i].second, 32, 32, 5);
+    }
+    for(int i = 0; i < NUM_OF_YELLOW_PAPER_sm; i++) {
+        std::string yellow_paper_name = "yellow-paper-" + yellow_paper_text_sm[i];
+        TextureManager::GetInstance()->DrawMenu(yellow_paper_name, yellow_paper_pos_sm[i].first + bonus + 50, yellow_paper_pos_sm[i].second, 32, 32, 5);
+    }
+
+    std::string music_text = "music";
+    for(int i = 0; i < (int) music_text.size(); i++) {
+        std::string text_name = "text-" + std::to_string(music_text[i] - 'a' + 1);
+        TextureManager::GetInstance()->DrawMenu(text_name, 1350 + i * 42 + bonus, 630, 5, 6, 7);
+    }
+    std::string sfx_text = "sfx";
+    for(int i = 0; i < (int) sfx_text.size(); i++) {
+        std::string text_name = "text-" + std::to_string(sfx_text[i] - 'a' + 1);
+        TextureManager::GetInstance()->DrawMenu(text_name, 1350 + i * 42 + bonus, 730, 5, 6, 7);
+    }
+    for(int i = 0; i < 2; i++) {
+        std::string yellow_button_name = "yellow-button-" + yellow_button_sm[i];
+        TextureManager::GetInstance()->DrawMenu(yellow_button_name, yellow_button_pos_sm[i].first + bonus + 100, yellow_button_pos_sm[i].second, 14, 14, 5.5);
+
+        SDL_Rect temp = {yellow_button_pos_sm[i].first + 15 + 100, yellow_button_pos_sm[i].second, 14 * 5, 14 * 5};
+        SDL_Rect temp_mouse = Mouse::getInstance()->getPoint();
+        if(SDL_HasIntersection(&temp, &temp_mouse)) {
+            if(Mouse::getInstance()->oneClickedCheck()) {
+                yellow_button_state[i] ^= 1;
+            }
+        }
+    }
+    for(int i = 0; i < 2; i++) {
+        std::string icon_name = "icon-";
+        if(yellow_button_state[i] == 0) icon_name += "6";
+        else icon_name += "5";
+        if(yellow_button_state[i] == 0) {
+            if(i == 0) music = true;
+            else sfx = true;
+        }
+        else {
+            if(i == 0) music = false;
+            else sfx = false;
+        }
+        TextureManager::GetInstance()->DrawMenu(icon_name, icon_menu_pos_sm[i].first + 15 + bonus + 100, icon_menu_pos_sm[i].second + 15, 8, 6, 5.5);
+    }
+
+    std::string volume = "volume";
+    for(int i = 0; i < (int) volume.size(); i++) {
+        std::string text_name = "text-" + std::to_string(volume[i] - 'a' + 1);
+        TextureManager::GetInstance()->DrawMenu(text_name, 1400 + i * 42 + bonus, 860, 5, 6, 7);
+    }
+
+    for(int i = 0; i < 7; i++) {
+        std::string slilder_name = "slider-" + slilder_text[i];
+        TextureManager::GetInstance()->DrawMenu(slilder_name, slider_volume[i].first + bonus + 100, slider_volume[i].second, 12, 12, 5);
+
+        if(i == 0 || i == 6) {
+
+            SDL_Rect temp = {slider_volume[i].first + 100, slider_volume[i].second, 12 * 5, 12 * 5};
+            SDL_Rect temp_mouse = Mouse::getInstance()->getPoint();
+            if(SDL_HasIntersection(&temp, &temp_mouse)) {
+                if(Mouse::getInstance()->oneClickedCheck()) {
+                    cur_volume += (i == 0 ? -1 : 1);
+                    cur_volume = std::max(0, cur_volume);
+                    cur_volume = std::min(4, cur_volume);
+                }
+            }
+        }
+    }
+
+    TextureManager::GetInstance()->DrawMenu("slider-3", 42.5 * cur_volume + bonus + 1400, 950, 12, 12, 5);
+
+    for(int i = 0; i < 4; i++) {
+        std::string orange_paper_name = "paper-" + orange_paper_text_sm[i];
+        TextureManager::GetInstance()->DrawMenu(orange_paper_name, orange_paper_sm[i].first + bonus + 50, orange_paper_sm[i].second, 32, 32, 5);
+    }
+
+    std::string settings = "setting";
+    for(int i = 0; i < (int) settings.size(); i++) {
+        std::string text_name = "text-" + std::to_string(settings[i] - 'a' + 1);
+        TextureManager::GetInstance()->DrawMenu(text_name, 1280 + i * 42 + bonus + 100, 1160, 5, 6, 7);
+    }
 }
 
 bool Engine::Clean() {
@@ -871,7 +1037,7 @@ bool Engine::Clean() {
 
 void Engine::Render() {
     SDL_RenderClear(m_Renderer);
-    darker = (game_over_screen == true || menu_screen == true);
+    darker = (game_over_screen == true || menu_screen == true || high_score_screen == true || (setting_screen && m_starting));
     if(m_starting) {
         m_LevelMap->Render();
         player->Draw();
@@ -933,9 +1099,11 @@ void Engine::Render() {
     }
     else {
         TextureManager::GetInstance()->DrawBackground("menu-screen", {0, 0, 2960, 1790});
-        TextureManager::GetInstance()->DrawBackground("title", {1000, 50, 1024, 1024});
-        for(auto t : button) {
-            t->Draw();
+        if(!setting_screen) {
+            TextureManager::GetInstance()->DrawBackground("title", {1000, 50, 1024, 1024});
+            for(auto t : button) {
+                t->Draw();
+            }
         }
     }
     if(esc_menu) {
@@ -947,6 +1115,7 @@ void Engine::Render() {
     } 
     menuGame();
     highScore();
+    settingMenu();
     Mouse::getInstance()->Draw();
     SDL_RenderPresent(m_Renderer);
 }
