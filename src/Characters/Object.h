@@ -51,6 +51,8 @@ class Object : public Character {
         bool isToBeDestroyed() const {
             return m_tobeDestroy;
         }
+
+        void setOldPos(std::pair<int, int> pos) { old_pos = pos; }
     private :
         Animation* m_Animation;
         RigidBody* m_RigidBody;
@@ -75,13 +77,17 @@ class Object : public Character {
         bool m_exploring = false;
         bool m_dead;
         bool active_bomb = false;
+        double m_explore_time = 0;
 
         Collider* m_Collider;
 
         Object* explore;
         Decor* sail;
 
+        int now = 1;
+
         Vector2D m_LastSafePosition;
+        std::pair<int, int> old_pos;
 };
 
 #endif // OBJECT_H

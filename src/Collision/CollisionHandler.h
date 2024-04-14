@@ -15,6 +15,8 @@ class CollisionHandler {
         bool mapCollision(SDL_Rect a);
 
         inline static CollisionHandler* GetInstance() { return s_Instance = (s_Instance != nullptr) ? s_Instance : new CollisionHandler(); }
+
+        TileMap GetCollisionTilemap() { return m_CollisionTilemap; }
     private : 
         CollisionHandler();
         TileMap m_CollisionTilemap;

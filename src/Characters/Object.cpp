@@ -25,13 +25,12 @@ void Object::Draw() {
         }
     }
     else m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
-    /*
+    
     Vector2D cam = Camera::GetInstance()->GetPostision();
     SDL_Rect box = m_Collider->Get();
     box.x -= cam.X;
     box.y -= cam.Y;
     SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
-    */
 }
 
 void Object::Load(std::string name_animation, std::string path_animation, int num, SDL_RendererFlip flip) {
@@ -117,7 +116,7 @@ void Object::Update(double dt) {
         }
     }
     else if(m_type == 3) {
-        m_Collider->Set(m_Transform->X, m_Transform->Y, m_Width * m_scale, m_Height * m_scale);
+        m_Collider->Set(m_Transform->X, m_Transform->Y + 100, m_Width * m_scale, (m_Height - 5) * m_scale);
         SetAnimation("exploring", 7, 100, 0);
     }
     else if(m_type == 4) {
@@ -155,19 +154,21 @@ void Object::AnimationState(double dt) {
             m_scale = 2;
             if(m_DestroyTimer >= 150.0f) {
                 m_tobeDestroy = true;
+                Item* red_diamod = new Item(new Properties("red-diamod", m_Transform->X, m_Transform->Y, 24, 24, 5));
+                red_diamod->setType(5);
             }
         }
     }
     else if(m_type == 2) {
         if(m_isGrounded && active_bomb) {
-            
+            now ^= 1;
             SetAnimation("ball-destroy", 3, 150, 0);
             explore->setExploring(true);
             m_DestroyTimer += dt;
-            if(m_DestroyTimer >= 80.0f) {
+            if(m_DestroyTimer >= 40.0f) {
                 explore->setExploring(false);
                 m_DestroyTimer = 0;
-                respawn(29 * 80, -3 * 80);
+                respawn(old_pos.first * 80, (old_pos.second - ((now == 0) ? 0 : 3)) * 80);
             }
         }
     }

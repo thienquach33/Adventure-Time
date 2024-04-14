@@ -5,6 +5,7 @@
 #include "../Physics/RigidBody.h"
 #include "../Animation/Animation.h"
 #include "../Physics/Collider.h"
+#include "Monster.h"
 
 #define JUMP_TIME 15.0f
 #define JUMP_FORCE 12.0f
@@ -30,8 +31,13 @@ class Decor : public Character {
         virtual void applydx(int dx) { this->dx = dx; }
         virtual void setOut(bool out) { m_out = out; }
         inline bool getVar() { return var; }
+        virtual void setNearPlayer(bool near) { near_player = near; }
+
+        inline bool getSpawnEnemy() { return spawn_enemy; }
 
         SDL_Rect getCollider() { return m_Collider->Get(); }
+
+        std::vector<Monster*> getEnemy() { return m_enemy; }
 
         int attackStartTicks = 0;
     private :
@@ -41,12 +47,26 @@ class Decor : public Character {
         bool var = false;
         double helm_time_idle = 0;
         double helm_time_turn = 0;
+        double m_time_appear = 0;
+        double m_time_idle = 0;
+        double m_time_disappear = 0;
+        double m_respawn = 0;
+        double delay_time = 0;
+        bool portal_show = 1;
         int m_type;
         int dx = 0;
+        bool m_portal_idle = 0;
+        bool m_portal_appear = true;
+        bool m_portal_disappear = 0;
+        bool near_player = 0;
+        bool spawn_enemy = 0;
+        int num_enemy = 0;
         Animation* m_Animation;
         RigidBody* m_RigidBody;
         Collider* m_Collider;
         Vector2D m_LastSafePosition;
+
+        std::vector<Monster*> m_enemy;
 };
 
 #endif // DECOR_H

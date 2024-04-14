@@ -10,6 +10,69 @@
 #include "Object.h"
 #include "../Core/Engine.h"
 
+struct Node {
+    int du, u, v;
+
+    bool operator < (const Node &others) const {
+        return (du > others.du);
+    }
+};
+
+std::vector<std::pair<int, int>> Monster::Dijkstra() {
+    std::vector<std::pair<int, int>> path;
+
+    std::priority_queue<Node> pq;
+
+    TileMap grid = CollisionHandler::GetInstance()->GetCollisionTilemap();
+
+    std::vector<std::vector<int>> dp(grid.size(), std::vector<int>(grid[0].size(), (int) 1e9 + 7));
+    std::vector<std::vector<std::pair<int, int>>> pre(grid.size(), std::vector<std::pair<int, int>>(grid[0].size()));
+
+    for(int i = 0; i < grid.size(); i++) {
+        for(int j = 0; j < grid[0].size(); j++) {
+            pre[i][j] = {-1, -1};
+        }
+    }
+
+    dp[m_Transform->Y / 80][m_Transform->X / 80] = 0;
+    pq.push({dp[m_Transform->Y / 80][m_Transform->X / 80], m_Transform->Y / 80, m_Transform->X / 80});
+
+    while(!pq.empty()) {
+        auto cur = pq.top();
+        pq.pop();
+
+        if(cur.du != dp[cur.u][cur.v]) continue;
+
+        if(cur.u == (int) player_position.Y / 80 && cur.v == (int) player_position.X / 80) break;
+
+        std::vector<std::pair<int, int>> directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+        for (auto dir : directions) {
+            int u = cur.u + dir.first;
+            int v = cur.v + dir.second;
+
+            if(u < 0 || u >= grid.size() || v < 0 || v >= grid[0].size()) continue;
+
+            if(grid[u][v] == 1) continue;
+
+            if(dp[u][v] > dp[cur.u][cur.v] + 1) {
+                dp[u][v] = dp[cur.u][cur.v] + 1;
+                pre[u][v] = {cur.u, cur.v};
+                pq.push({dp[u][v], u, v});
+            }
+        }
+    }
+
+    std::pair<int, int> cur = {player_position.Y / 80, player_position.X / 80};
+    while(pre[cur.first][cur.second].first != -1 && pre[cur.first][cur.second].second != -1) {
+        path.push_back(cur);
+        cur = pre[cur.first][cur.second];
+    }
+
+    std::reverse(path.begin(), path.end());
+
+    return path;
+}
+
 Monster::Monster(Properties* props) : Character(props) { 
     m_isRunning = false;
     m_isRunning = false;
@@ -31,7 +94,7 @@ Monster::Monster(Properties* props) : Character(props) {
     m_Animation = new Animation();
     
     m_RigidBody = new RigidBody();
-    m_RigidBody->SetGravity(4.0f);
+    m_RigidBody->SetGravity(6.0f);
 }
 
 void Monster::Draw() {
@@ -220,6 +283,38 @@ void Monster::Update(double dt) {
             m_AttackTime = 0;
         }
     }
+    else if(type == 4) {
+        SetAnimation("fish-idle", 8, 100, 0);
+        m_Collider->Set(m_Transform->X, m_Transform->Y, m_Width * m_scale, m_Height * m_scale);
+        m_RigidBody->UnSetForce();
+        m_isRunning = false;
+
+        if(player_position.X != 0 && player_position.Y != 0 && !m_dead && !m_isAttacking && !m_isHitting && heal_of_enemy > 0) {
+            std::vector<std::pair<int, int>> path = Dijkstra();
+            
+            if(path.size() >= 1) {
+
+                std::pair<int, int> nextPos = ((int) path.size() == 1 ? path[0] : path[1]);
+
+                if(m_Transform->Y < player_position.Y && m_Transform->X > (nextPos.second - 1)  * 80) {
+                    m_RigidBody->ApplyForceX(FORWARD * 4.0f);
+                    m_isRunning = true;
+                    m_Flip = SDL_FLIP_NONE;
+                }
+                else if(m_Transform->X > nextPos.second * 80) {
+                    m_RigidBody->ApplyForceX(FORWARD * 4.0f);
+                    m_isRunning = true;
+                    m_Flip = SDL_FLIP_NONE;
+                }
+
+                else if(m_Transform->X < nextPos.second * 80) {
+                    m_RigidBody->ApplyForceX(BACKWARD * 4.0f);
+                    m_isRunning = true;
+                    m_Flip = SDL_FLIP_HORIZONTAL;
+                }
+            }
+        }
+    }
     if(m_RigidBody->Velocity().Y > 0 && !m_isGrounded) m_isFalling = true;
     else m_isFalling = false;
 
@@ -328,6 +423,43 @@ void Monster::AnimationState(double dt) {
     else if(type == 1) {
         if(m_isRunning) {
             SetAnimation("pink-star-attack", 4, 100);
+        }
+    }
+    else if(type == 4) {
+        if(m_isRunning) {
+            SetAnimation("fish-run", 6, 100);
+        }
+        if(m_isHitting) {
+            if(heal_of_enemy >= 10) {
+                heal_of_enemy = std::max(heal_of_enemy - 10, 0);
+                int cur = SDL_GetTicks();
+                SetAnimation("fish-hit", 4, 200, cur);
+            }
+        }
+        if(m_isAttacking) {
+            if(attackStartTicks == 0) {
+                attackStartTicks = SDL_GetTicks();
+            }
+            SetAnimation("fish-attack", 4, 150, attackStartTicks);
+        }
+        else {
+            for(auto t : m_Effect) {
+                t->setAttack(false);
+            }
+            attackStartTicks = 0;
+        }
+        if(heal_of_enemy == 0) {
+            if(m_DeadTime >= 200.0f) {
+                m_tobeDestroy = true;
+                SetAnimation("fish-deaded", 4, 200, 0);    
+            }
+            else {
+                if(add_point == false) {
+                    Engine::GetInstance()->score_game += 200;
+                    add_point = true;
+                }
+                SetAnimation("fish-dead", 4, 200, 0);
+            }
         }
     }
 }

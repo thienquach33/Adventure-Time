@@ -32,13 +32,13 @@ std::vector<Object*> portal_gate;
 std::vector<Button*> button, inGame_button;
 std::vector<Effect*> effect;
 std::vector<Effect*> enemy_effect;
-Object* ball;
+std::vector<Object*> ball;
 Object* ship;
 
 const int NUM_OF_HEAL = 3;
 
 std::vector<std::pair<int, int>> postision_box[3] = {
-     { {6, 15}, {15, 15} , {99, 16}, {126, 8}},
+     { {6, 15}, {15, 15}, {126, 8}, {112, 15}, {100, 3}, {112, 3}}, 
      {  },
      { }
 };
@@ -50,9 +50,8 @@ std::vector<std::pair<int, int>> sliver_postision_item[3] = {
 std::vector<std::pair<int, int>> enemy_postision[3] = {
     { {22, 12}, {45, 14}, {73, 14}}
 };
-
 std::vector<std::pair<int, int>> pink_start_pos = {
-    {8, 6}
+    {81, 4}
 };
 std::vector<std::pair<int, int>> gold_postision_item[3] = {
     { {2, 16} , {12, 7}, {33, 14}, {46, 15}, {126, 9}, {74, 14}, {83, 19}, {29, 6}},
@@ -69,6 +68,14 @@ std::vector<std::pair<int, int>> pos_tree = {
     {140, 1340},
     {14 * 80 - 23, 18 * 80},
     {17 * 80 - 23, 17 * 80}
+};
+
+std::vector<std::pair<int, int>> pos_bomb = {
+    {29, -3}, {40, -3}
+};
+
+std::vector<std::pair<int, int>> pos_exploration = {
+    {29, 5}, {40, 5}
 };
 
 int gameMusicChannel = -1;
@@ -93,7 +100,7 @@ bool Engine::Init() {
     font = TTF_OpenFont("assets/fonts/Stacked pixel.ttf", 30);
 
     // create player
-    player = new Sprites(new Properties("player-idle", 8 * 80, 15 * 80, 64, 40, 5));
+    player = new Sprites(new Properties("player-idle", 81 * 80, 16 * 80, 64, 40, 5));
     
     // no sword    
     player->Load("player-idle", "assets/player/Sprites/Captain Clown Nose/Captain Clown Nose without Sword/01-Idle/Idle", 5);
@@ -266,6 +273,349 @@ bool Engine::Init() {
     SDL_Texture* texture = SDL_CreateTextureFromSurface(m_Renderer, surface);
 
     return m_isRunning = true;
+}
+
+void Engine::Init_Level(int level) {
+    box.clear();
+    for(auto pos : postision_box[level - 1]) {
+        Object* new_box = new Object(new Properties("box-idle", pos.first * 80, pos.second * 80, 28, 22, 5));
+        new_box->Load("box-idle", "assets/Objects/Box/Idle/idle", 1);
+        new_box->Load("box-hit", "assets/Objects/Box/Hit/hit", 4);
+        new_box->Load("box-destroy", "assets/Objects/Box/Destroyed/destroy", 5);
+        new_box->setType(0);
+        box.push_back(new_box);
+    }
+
+    // create coin
+    coin.clear();
+    for(auto pos : sliver_postision_item[level - 1]) {
+        Item* new_coin = new Item(new Properties("sliver-coin", pos.first * 80, pos.second * 80, 16, 16, 5));
+        new_coin->Load("sliver-coin", "assets/Objects/Silver Coin/sliver-coin", 4);
+        new_coin->Load("coin-effect", "assets/Objects/Coin Effect/coin-effect", 3);
+        new_coin->setType(0);
+        coin.push_back(new_coin);
+    }
+
+    for(auto pos : gold_postision_item[level - 1]) {
+        Item* new_coin = new Item(new Properties("gold-coin", pos.first * 80, pos.second * 80, 16, 16, 5));
+        new_coin->Load("gold-coin", "assets/Objects/Gold Coin/gold-coin", 4);
+        new_coin->Load("coin-effect", "assets/Objects/Coin Effect/coin-effect", 3);
+        new_coin->setType(2);
+        coin.push_back(new_coin);
+    }
+
+
+    bottle.clear();
+    Item* new_green_bottle = new Item(new Properties("green-bottle", 46 * 80, 9 * 80 - 20, 13, 17, 4));
+    new_green_bottle->Load("green-bottle", "assets/item/Sprites/Green Bottle/green-bottle", 7);
+    new_green_bottle->setType(6);
+    bottle.push_back(new_green_bottle);
+
+    portal_gate.clear();
+    // create portal gate
+    for(auto pos : portal_gate_postision[level - 1]) {
+        Object* new_portal_gate = new Object(new Properties("portal-gate", pos.first * 80, pos.second * 80, 20, 32, 10));
+        new_portal_gate->Load("portal-gate", "assets/Objects/portal-gate/pixil-frame", 6);
+        new_portal_gate->setType(1);
+        portal_gate.push_back(new_portal_gate);
+    }
+
+    // create enemy respawn
+    enemy.clear();
+    for(auto pos : enemy_postision[level - 1]) {
+        Monster* new_enemy = new Monster(new Properties("monster", pos.first * 80, pos.second * 80, 72, 32, 5));
+        new_enemy->Load("enemy-idle", "assets/enemy/Sprites/Crabby/01-Idle/Idle", 9);
+        new_enemy->Load("enemy-run", "assets/enemy/Sprites/Crabby/02-Run/Run", 6);
+        new_enemy->Load("enemy-attack", "assets/enemy/Sprites/Crabby/07-Attack/Attack", 4);
+        new_enemy->setType(0);
+        new_enemy->Load("enemy-hit", "assets/enemy/Sprites/Crabby/08-Hit/Hit", 4);
+        new_enemy->Load("enemy-dead", "assets/enemy/Sprites/Crabby/09-Dead Hit/Dead Hit", 4);
+        new_enemy->Load("enemy-deaded", "assets/enemy/Sprites/Crabby/10-Dead Ground/Dead Ground", 4);
+        enemy.push_back(new_enemy);
+    }
+    for(auto t : enemy) {
+        enemy_effect.clear();
+        Effect* crab_attack_effected = new Effect(new Properties("crab-attack-effected", 600, 600, 118, 24, 5));
+        crab_attack_effected->Load("crab-attack-effected", "assets/enemy/Sprites/Crabby/11-Attack Effect/Attack Effect", 3);
+        enemy_effect.push_back(crab_attack_effected);
+        t->addEffect(enemy_effect);
+    }
+
+    for(auto pos : pink_start_pos) {
+        Monster* new_enemy = new Monster(new Properties("pink-star", pos.first * 80, pos.second * 80, 34, 30, 5));
+        new_enemy->Load("pink-star-idle", "assets/enemy/Sprites/Pink Star/01-Idle/Idle", 8);
+        new_enemy->Load("pink-star-attack", "assets/enemy/Sprites/Pink Star/07-Attack/Attack", 4);
+        new_enemy->setType(1);
+        enemy.push_back(new_enemy);
+    }
+
+    Monster* enemy_totem = new Monster(new Properties("totem", 78 * 80, 15 * 80, 60, 32, 4));
+    enemy_totem->Load("totem-idle", "assets/enemy/Sprites/Totems/Head 1/Idle 1/idle", 1);
+    enemy_totem->Load("totem-attack", "assets/enemy/Sprites/Totems/Head 1/Attack 1/attack", 6);
+    enemy_totem->setType(2);
+    enemy.push_back(enemy_totem);
+
+
+    for(int i = 0; i < 2; i++) {
+        Object* new_ball = new Object(new Properties("ball-idle", pos_bomb[i].first * 80, pos_bomb[i].second * 80, 16, 16, 5));
+        new_ball->Load("ball-idle", "assets/trap/Cannon/Cannon Ball Idle/ball", 1);
+        new_ball->Load("ball-destroy", "assets/trap/Cannon/Cannon Ball Destroyed/ball-destroy", 3);
+        Object* exploring = new Object(new Properties("exploring", pos_exploration[i].first * 80 - 80, pos_exploration[i].second * 80, 54, 60, 5));
+        exploring->Load("exploring", "assets/trap/Cannon/Cannon Ball Explosion/explore", 7);
+        exploring->setType(3);
+        new_ball->addExploration(exploring);
+        new_ball->setType(2);
+        new_ball->setOldPos(pos_bomb[i]);
+
+        ball.push_back(new_ball);
+    }
+
+    ship = new Object(new Properties("ship-idle", 49 * 80, 18 * 80, 80, 26, 5));
+    ship->Load("ship-idle", "assets/Objects/Sprites/Ship/Ship/Idle/ship", 6);
+    ship->setType(4);
+
+    decor_things.clear();
+    Decor* sail = new Decor(new Properties("sail-no-wind", 4120, 1200, 28, 50, 5));
+    sail->Load("sail-no-wind", "assets/Decor/Sail/No Wind/sail-no-wind", 8);
+    sail->Load("sail-wind", "assets/Decor/Sail/Wind/sail-wind", 4);
+    sail->Load("sail-tf-no-wind", "assets/Decor/Sail/Transition to No Wind/sail-tf-no", 11);
+    sail->Load("sail-tf-wind", "assets/Decor/Sail/Transition to Wind/sail-tf-wind", 3);
+    sail->setType(4);
+    decor_things.push_back(sail);
+
+    ship->addSail(sail);
+
+    Decor* platform = new Decor(new Properties("platform", 650, 1200, 30, 16, 5));
+    platform->Load("platform", "assets/Decor/Flag/Platform", 1);
+    platform->setType(1);
+    decor_things.push_back(platform);
+
+    for(auto pos : pos_tree) {
+        Decor* tree = new Decor(new Properties("tree", pos.first, pos.second, 39, 32, 3.5));
+        tree->Load("tree", "assets/Decor/Front Palm Trees/tree", 4);
+        tree->setType(2);
+        decor_things.push_back(tree);
+    }
+
+    Decor* flag = new Decor(new Properties("Flag-idle", 9 * 80, 980, 34, 93, 5));
+    flag->Load("Flag-idle", "assets/Decor/Flag/Flag", 9);
+    flag->setType(0);
+    decor_things.push_back(flag);
+
+    Decor* helm = new Decor(new Properties("helm-idle", 32 * 80, 13 * 80, 31, 32, 5));
+    helm->Load("helm-idle", "assets/Decor/Ship Helm/idle", 6);
+    helm->Load("helm-turn", "assets/Decor/Ship Helm/turn", 4);
+    helm->setType(3);
+    decor_things.push_back(helm);
+
+    Decor* monster_portal = new Decor(new Properties("monster-portal", 85 * 80, 11 * 80, 64, 64, 5));
+    monster_portal->Load("monster-portal-idle", "assets/Decor/portal_gate/idle/idle", 8);
+    monster_portal->Load("monster-portal-appear", "assets/Decor/portal_gate/appear/appear", 8);
+    monster_portal->Load("monster-portal-disappear", "assets/Decor/portal_gate/disappear/disappear", 8);
+    monster_portal->setType(5);
+    decor_things.push_back(monster_portal);
+    player->addMontestPortal(monster_portal);
+
+    sword = new Item(new Properties("sword", 22 * 80, 16 * 80, 20, 20, 5));
+    sword->Load("sword", "assets/player/Sprites/Sword/21-Sword Idle/Sword Idle", 8);
+    sword->setType(5);
+
+    // add item
+    player->addSword(sword);
+    player->addBottle(bottle);
+    player->addBox(box);
+    player->addItem(coin);
+    player->addEnemy(enemy);
+    player->addGateLevel(portal_gate[0]);
+    player->addBomb(ball);
+    player->addShip(ship);
+
+    // camera 
+    Camera::GetInstance()->SetTarget(player->GetOrigin());
+}
+
+int cur_volume = 2;
+
+void Engine::Update() {
+    if(music == false) {
+        Mix_Pause(gameMusicChannel);
+    }
+    else {
+        Mix_Resume(gameMusicChannel);
+    }
+    Mix_Volume(-1, MIX_MAX_VOLUME * cur_volume * 0.25);
+    Mouse::getInstance()->Update();
+    if(!m_starting) {
+        for(auto t : button) {
+            t->Update(0);
+        }
+    }
+    if(m_starting && !game_over_screen && !menu_screen && !high_score_screen && !setting_screen) {
+        double dt = Timer::getInstance()->getDeltaTime();
+        for(int LEVEL = 1; LEVEL <= 3; LEVEL++) {
+            if(player->getLevel() == LEVEL && !loaded_level[LEVEL - 1]) {
+                Init_Level(LEVEL);
+                loaded_level[LEVEL - 1] = true;
+                cur_level = LEVEL;
+            }
+        }
+        player->Update(dt);
+        for(auto &t : ball) {
+            if(!t->isToBeDestroyed()) {
+                t->Update(dt);
+                t->getExploration()->Update(dt);
+            }
+        }
+        if(player->getTurn() > NUM_OF_HEAL) {
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Game Over", "You Lose", NULL);
+            Quit();
+        }   
+        m_LevelMap->Update();
+        for(auto it = heal.begin(); it != heal.end(); /* no increment here */) {
+            if((*it)->isToBeDestroyed()) {
+                it = heal.erase(it);
+            } else {
+                ++it;
+            }
+        }
+        for(auto it = box.begin(); it != box.end(); /* no increment here */) {
+            if((*it)->isToBeDestroyed()) {
+                it = box.erase(it);
+            } else {
+                ++it;
+            }
+        }
+        for(auto it = coin.begin(); it != coin.end(); /* no increment here */) {
+            if((*it)->isToBeDestroyed()) {
+                it = coin.erase(it);
+            } else {
+                ++it;
+            }
+        }
+        for(auto it = bottle.begin(); it != bottle.end(); /* no increment here */) {
+            if((*it)->isToBeDestroyed()) {
+                it = bottle.erase(it);
+            } else {
+                ++it;
+            }
+        }
+        if(!sword->isToBeDestroyed()) {
+            sword->Update(dt);
+        }
+        key_level->Update(dt);
+        ship->Update(dt);
+        for(auto t : enemy) {
+            t->Update(dt);
+        }
+
+        for(auto t : box) {
+            t->Update(dt);
+        }
+        for(auto t : coin) {
+            t->Update(dt);
+        }
+        for(auto t : bottle) {
+            t->Update(dt);
+        }
+        health_bar->Update(dt);
+        for(auto t : heal) {
+            t->Update(dt);
+        }
+        for(auto t : portal_gate) {
+            t->Update(dt);
+        }
+        for(auto t : decor_things) {
+            t->Update(dt);
+        }
+        Camera::GetInstance()->Update(dt);
+    }
+}
+
+void Engine::Render() {
+    SDL_RenderClear(m_Renderer);
+    darker = (game_over_screen == true || menu_screen == true || high_score_screen == true || (setting_screen && m_starting));
+    if(m_starting) {
+        m_LevelMap->Render();
+        player->Draw();
+        key_level->Draw();
+        ship->Draw();
+
+        int bonus = Camera::GetInstance()->GetPostision().X;
+
+        std::string current_score = "score " + std::to_string(score_game);
+
+        for(int i = 0; i < (int) current_score.size(); i++) {
+            std::string text_name = "big-text-" + std::to_string(current_score[i] - 'a' + 1);
+            if(current_score[i] >= '1' && current_score[i] <= '9') {
+                text_name = "big-text-" + std::to_string(current_score[i] - '0' + 26);
+            }
+            if(current_score[i] == '0') text_name = "big-text-36";
+            TextureManager::GetInstance()->Draw(text_name, 500 + i * 60 + bonus, 100, 10, 11, 6);
+        }
+
+        for(auto t : enemy) {
+            t->Draw();
+            for(auto d : t->getEffect()) {
+                d->Draw();
+            }
+        }
+        for(auto t : effect) {
+            t->Draw();
+        }
+        for(auto t : box) {
+            t->Draw();
+        }
+        for(auto t : coin) {
+            t->Draw();
+        }
+        health_bar->Draw();
+        for(auto t : heal) {
+            t->Draw();
+        }
+        for(auto t : portal_gate) {
+            t->Draw();
+        }
+        for(auto t : decor_things) {
+            t->Draw();
+        }
+        for(auto t : bottle) {
+            t->Draw();
+        }
+
+        if(!sword->isToBeDestroyed()) {
+            sword->Draw();
+        }
+        for(auto t : ball) {
+            if(!t->isToBeDestroyed()) {
+                t->Draw();
+                t->getExploration()->Draw();
+            }
+        }
+        for(auto t : inGame_button) {
+            t->Draw();
+        }
+    }
+    else {
+        TextureManager::GetInstance()->DrawBackground("menu-screen", {0, 0, 2960, 1790});
+        if(!setting_screen) {
+            TextureManager::GetInstance()->DrawBackground("title", {1000, 50, 1024, 1024});
+            for(auto t : button) {
+                t->Draw();
+            }
+        }
+    }
+    if(esc_menu) {
+        TextureManager::GetInstance()->Draw("menu-game", 0, 0, 128, 128, 5);
+    }
+    if(player->getTurn() > 0) {
+        GameOverScreen();
+        // Quit();
+    } 
+    menuGame();
+    highScore();
+    settingMenu();
+    Mouse::getInstance()->Draw();
+    SDL_RenderPresent(m_Renderer);
 }
 
 std::vector<std::pair<int, int>> banner_p_highcore = {
@@ -477,251 +827,6 @@ void Engine::menuGame() {
     for(int i = 0; i < 6; i++) {
         std::string icon_name = "icon-" + icon_menu[i];
         TextureManager::GetInstance()->DrawMenu(icon_name, icon_menu_pos[i].first - 35 + bonus, icon_menu_pos[i].second + 15, 8, 6, 5);
-    }
-}
-
-void Engine::Init_Level(int level) {
-    // if(level == 2) {
-    //     player->setSpawnPosition(4 * 80, 16 * 80);
-    // }
-
-    // create box
-    box.clear();
-    for(auto pos : postision_box[level - 1]) {
-        Object* new_box = new Object(new Properties("box-idle", pos.first * 80, pos.second * 80, 28, 22, 5));
-        new_box->Load("box-idle", "assets/Objects/Box/Idle/idle", 1);
-        new_box->Load("box-hit", "assets/Objects/Box/Hit/hit", 4);
-        new_box->Load("box-destroy", "assets/Objects/Box/Destroyed/destroy", 5);
-        new_box->setType(0);
-        box.push_back(new_box);
-    }
-
-    // create coin
-    coin.clear();
-    for(auto pos : sliver_postision_item[level - 1]) {
-        Item* new_coin = new Item(new Properties("sliver-coin", pos.first * 80, pos.second * 80, 16, 16, 5));
-        new_coin->Load("sliver-coin", "assets/Objects/Silver Coin/sliver-coin", 4);
-        new_coin->Load("coin-effect", "assets/Objects/Coin Effect/coin-effect", 3);
-        new_coin->setType(0);
-        coin.push_back(new_coin);
-    }
-
-    for(auto pos : gold_postision_item[level - 1]) {
-        Item* new_coin = new Item(new Properties("gold-coin", pos.first * 80, pos.second * 80, 16, 16, 5));
-        new_coin->Load("gold-coin", "assets/Objects/Gold Coin/gold-coin", 4);
-        new_coin->Load("coin-effect", "assets/Objects/Coin Effect/coin-effect", 3);
-        new_coin->setType(2);
-        coin.push_back(new_coin);
-    }
-
-
-    bottle.clear();
-    Item* new_green_bottle = new Item(new Properties("green-bottle", 46 * 80, 9 * 80 - 20, 13, 17, 4));
-    new_green_bottle->Load("green-bottle", "assets/item/Sprites/Green Bottle/green-bottle", 7);
-    new_green_bottle->setType(6);
-    bottle.push_back(new_green_bottle);
-
-    portal_gate.clear();
-    // create portal gate
-    for(auto pos : portal_gate_postision[level - 1]) {
-        Object* new_portal_gate = new Object(new Properties("portal-gate", pos.first * 80, pos.second * 80, 20, 32, 10));
-        new_portal_gate->Load("portal-gate", "assets/Objects/portal-gate/pixil-frame", 6);
-        new_portal_gate->setType(1);
-        portal_gate.push_back(new_portal_gate);
-    }
-
-    // create enemy respawn
-    enemy.clear();
-    for(auto pos : enemy_postision[level - 1]) {
-        Monster* new_enemy = new Monster(new Properties("monster", pos.first * 80, pos.second * 80, 72, 32, 5));
-        new_enemy->Load("enemy-idle", "assets/enemy/Sprites/Crabby/01-Idle/Idle", 9);
-        new_enemy->Load("enemy-run", "assets/enemy/Sprites/Crabby/02-Run/Run", 6);
-        new_enemy->Load("enemy-attack", "assets/enemy/Sprites/Crabby/07-Attack/Attack", 4);
-        new_enemy->setType(0);
-        new_enemy->Load("enemy-hit", "assets/enemy/Sprites/Crabby/08-Hit/Hit", 4);
-        new_enemy->Load("enemy-dead", "assets/enemy/Sprites/Crabby/09-Dead Hit/Dead Hit", 4);
-        new_enemy->Load("enemy-deaded", "assets/enemy/Sprites/Crabby/10-Dead Ground/Dead Ground", 4);
-        enemy.push_back(new_enemy);
-    }
-    for(auto t : enemy) {
-        enemy_effect.clear();
-        Effect* crab_attack_effected = new Effect(new Properties("crab-attack-effected", 600, 600, 118, 24, 5));
-        crab_attack_effected->Load("crab-attack-effected", "assets/enemy/Sprites/Crabby/11-Attack Effect/Attack Effect", 3);
-        enemy_effect.push_back(crab_attack_effected);
-        t->addEffect(enemy_effect);
-    }
-
-    for(auto pos : pink_start_pos) {
-        Monster* new_enemy = new Monster(new Properties("pink-star", pos.first * 80, pos.second * 80, 34, 30, 5));
-        new_enemy->Load("pink-star-idle", "assets/enemy/Sprites/Pink Star/01-Idle/Idle", 8);
-        new_enemy->Load("pink-star-attack", "assets/enemy/Sprites/Pink Star/07-Attack/Attack", 4);
-        new_enemy->setType(1);
-        enemy.push_back(new_enemy);
-    }
-
-    Monster* enemy_totem = new Monster(new Properties("totem", 78 * 80, 15 * 80, 60, 32, 4));
-    enemy_totem->Load("totem-idle", "assets/enemy/Sprites/Totems/Head 1/Idle 1/idle", 1);
-    enemy_totem->Load("totem-attack", "assets/enemy/Sprites/Totems/Head 1/Attack 1/attack", 6);
-    enemy_totem->setType(2);
-    enemy.push_back(enemy_totem);
-
-    ball = new Object(new Properties("ball-idle", 29 * 80, -3 * 80, 16, 16, 5));
-    ball->Load("ball-idle", "assets/trap/Cannon/Cannon Ball Idle/ball", 1);
-    ball->Load("ball-destroy", "assets/trap/Cannon/Cannon Ball Destroyed/ball-destroy", 3);
-    Object* exploring = new Object(new Properties("exploring", 28 * 80, 5 * 80, 54, 60, 5));
-    exploring->Load("exploring", "assets/trap/Cannon/Cannon Ball Explosion/explore", 7);
-    exploring->setType(3);
-    ball->addExploration(exploring);
-    ball->setType(2);
-
-    ship = new Object(new Properties("ship-idle", 49 * 80, 18 * 80, 80, 26, 5));
-    ship->Load("ship-idle", "assets/Objects/Sprites/Ship/Ship/Idle/ship", 6);
-    ship->setType(4);
-
-    decor_things.clear();
-    Decor* sail = new Decor(new Properties("sail-no-wind", 4120, 1200, 28, 50, 5));
-    sail->Load("sail-no-wind", "assets/Decor/Sail/No Wind/sail-no-wind", 8);
-    sail->Load("sail-wind", "assets/Decor/Sail/Wind/sail-wind", 4);
-    sail->Load("sail-tf-no-wind", "assets/Decor/Sail/Transition to No Wind/sail-tf-no", 11);
-    sail->Load("sail-tf-wind", "assets/Decor/Sail/Transition to Wind/sail-tf-wind", 3);
-    sail->setType(4);
-    decor_things.push_back(sail);
-
-    ship->addSail(sail);
-
-    Decor* platform = new Decor(new Properties("platform", 650, 1200, 30, 16, 5));
-    platform->Load("platform", "assets/Decor/Flag/Platform", 1);
-    platform->setType(1);
-    decor_things.push_back(platform);
-
-    for(auto pos : pos_tree) {
-        Decor* tree = new Decor(new Properties("tree", pos.first, pos.second, 39, 32, 3.5));
-        tree->Load("tree", "assets/Decor/Front Palm Trees/tree", 4);
-        tree->setType(2);
-        decor_things.push_back(tree);
-    }
-
-    Decor* flag = new Decor(new Properties("Flag-idle", 9 * 80, 980, 34, 93, 5));
-    flag->Load("Flag-idle", "assets/Decor/Flag/Flag", 9);
-    flag->setType(0);
-    decor_things.push_back(flag);
-
-    Decor* helm = new Decor(new Properties("helm-idle", 32 * 80, 13 * 80, 31, 32, 5));
-    helm->Load("helm-idle", "assets/Decor/Ship Helm/idle", 6);
-    helm->Load("helm-turn", "assets/Decor/Ship Helm/turn", 4);
-    helm->setType(3);
-    decor_things.push_back(helm);
-
-    sword = new Item(new Properties("sword", 22 * 80, 16 * 80, 20, 20, 5));
-    sword->Load("sword", "assets/player/Sprites/Sword/21-Sword Idle/Sword Idle", 8);
-    sword->setType(5);
-
-    // add item
-    player->addSword(sword);
-    player->addBottle(bottle);
-    player->addBox(box);
-    player->addItem(coin);
-    player->addEnemy(enemy);
-    player->addGateLevel(portal_gate[0]);
-    player->addBomb(ball);
-    player->addShip(ship);
-
-    // camera 
-    Camera::GetInstance()->SetTarget(player->GetOrigin());
-}
-
-int cur_volume = 2;
-
-void Engine::Update() {
-    if(music == false) {
-        Mix_Pause(gameMusicChannel);
-    }
-    else {
-        Mix_Resume(gameMusicChannel);
-    }
-    Mix_Volume(-1, MIX_MAX_VOLUME * cur_volume * 0.25);
-    double dt = Timer::getInstance()->getDeltaTime();
-    Mouse::getInstance()->Update();
-    if(!m_starting) {
-        for(auto t : button) {
-            t->Update(dt);
-        }
-    }
-    if(m_starting && !game_over_screen && !menu_screen && !high_score_screen && !setting_screen) {
-        for(int LEVEL = 1; LEVEL <= 3; LEVEL++) {
-            if(player->getLevel() == LEVEL && !loaded_level[LEVEL - 1]) {
-                Init_Level(LEVEL);
-                loaded_level[LEVEL - 1] = true;
-                cur_level = LEVEL;
-            }
-        }
-        player->Update(dt);
-        if(!ball->isToBeDestroyed()) {
-            ball->Update(dt);
-            ball->getExploration()->Update(dt);
-        }
-        if(player->getTurn() > NUM_OF_HEAL) {
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Game Over", "You Lose", NULL);
-            Quit();
-        }   
-        m_LevelMap->Update();
-        for(auto it = heal.begin(); it != heal.end(); /* no increment here */) {
-            if((*it)->isToBeDestroyed()) {
-                it = heal.erase(it);
-            } else {
-                ++it;
-            }
-        }
-        for(auto it = box.begin(); it != box.end(); /* no increment here */) {
-            if((*it)->isToBeDestroyed()) {
-                it = box.erase(it);
-            } else {
-                ++it;
-            }
-        }
-        for(auto it = coin.begin(); it != coin.end(); /* no increment here */) {
-            if((*it)->isToBeDestroyed()) {
-                it = coin.erase(it);
-            } else {
-                ++it;
-            }
-        }
-        for(auto it = bottle.begin(); it != bottle.end(); /* no increment here */) {
-            if((*it)->isToBeDestroyed()) {
-                it = bottle.erase(it);
-            } else {
-                ++it;
-            }
-        }
-        if(!sword->isToBeDestroyed()) {
-            sword->Update(dt);
-        }
-        key_level->Update(dt);
-        ship->Update(dt);
-        for(auto t : enemy) {
-            t->Update(dt);
-        }
-
-        for(auto t : box) {
-            t->Update(dt);
-        }
-        for(auto t : coin) {
-            t->Update(dt);
-        }
-        for(auto t : bottle) {
-            t->Update(dt);
-        }
-        health_bar->Update(dt);
-        for(auto t : heal) {
-            t->Update(dt);
-        }
-        for(auto t : portal_gate) {
-            t->Update(dt);
-        }
-        for(auto t : decor_things) {
-            t->Update(dt);
-        }
-        Camera::GetInstance()->Update(dt);
     }
 }
 
@@ -1033,91 +1138,6 @@ bool Engine::Clean() {
     SDL_Quit();
     TTF_CloseFont(font);
     SDL_Log("Success Clean !!!\n");
-}
-
-void Engine::Render() {
-    SDL_RenderClear(m_Renderer);
-    darker = (game_over_screen == true || menu_screen == true || high_score_screen == true || (setting_screen && m_starting));
-    if(m_starting) {
-        m_LevelMap->Render();
-        player->Draw();
-        key_level->Draw();
-        ship->Draw();
-
-        int bonus = Camera::GetInstance()->GetPostision().X;
-
-        std::string current_score = "score " + std::to_string(score_game);
-
-        for(int i = 0; i < (int) current_score.size(); i++) {
-            std::string text_name = "big-text-" + std::to_string(current_score[i] - 'a' + 1);
-            if(current_score[i] >= '1' && current_score[i] <= '9') {
-                text_name = "big-text-" + std::to_string(current_score[i] - '0' + 26);
-            }
-            if(current_score[i] == '0') text_name = "big-text-36";
-            TextureManager::GetInstance()->Draw(text_name, 500 + i * 60 + bonus, 100, 10, 11, 6);
-        }
-
-        for(auto t : enemy) {
-            t->Draw();
-            for(auto d : t->getEffect()) {
-                d->Draw();
-            }
-        }
-        for(auto t : effect) {
-            t->Draw();
-        }
-        for(auto t : box) {
-            t->Draw();
-        }
-        for(auto t : coin) {
-            t->Draw();
-        }
-        health_bar->Draw();
-        for(auto t : heal) {
-            t->Draw();
-        }
-        for(auto t : portal_gate) {
-            t->Draw();
-        }
-        for(auto t : decor_things) {
-            t->Draw();
-        }
-        for(auto t : bottle) {
-            t->Draw();
-        }
-
-        if(!sword->isToBeDestroyed()) {
-            sword->Draw();
-        }
-        if(!ball->isToBeDestroyed()) {
-            ball->Draw();
-            ball->getExploration()->Draw();
-        }
-        for(auto t : inGame_button) {
-            t->Draw();
-        }
-    }
-    else {
-        TextureManager::GetInstance()->DrawBackground("menu-screen", {0, 0, 2960, 1790});
-        if(!setting_screen) {
-            TextureManager::GetInstance()->DrawBackground("title", {1000, 50, 1024, 1024});
-            for(auto t : button) {
-                t->Draw();
-            }
-        }
-    }
-    if(esc_menu) {
-        TextureManager::GetInstance()->Draw("menu-game", 0, 0, 128, 128, 5);
-    }
-    if(player->getTurn() > 0) {
-        GameOverScreen();
-        // Quit();
-    } 
-    menuGame();
-    highScore();
-    settingMenu();
-    Mouse::getInstance()->Draw();
-    SDL_RenderPresent(m_Renderer);
 }
 
 void Engine::Events() {

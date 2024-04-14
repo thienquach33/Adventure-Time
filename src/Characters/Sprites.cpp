@@ -45,10 +45,10 @@ Sprites::Sprites(Properties* props) : Character(props) {
 void Sprites::Draw() {
     m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
     Vector2D cam = Camera::GetInstance()->GetPostision();
-    // SDL_Rect box = m_Collider->Get();
-    // box.x -= cam.X;
-    // box.y -= cam.Y;
-    // SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
+    SDL_Rect box = m_Collider->Get();
+    box.x -= cam.X;
+    box.y -= cam.Y;
+    SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
 }
 
 void Sprites::Load(std::string name_animation, std::string path_animation, int num, SDL_RendererFlip flip) {
@@ -168,7 +168,7 @@ void Sprites::Update(double dt) {
     }
 
     // jumping
-    if(Input::getInstance()->getKeyDown(SDL_SCANCODE_W) && m_isGrounded && (!(m_is_on_ship && ship->moving()))) {
+    if(Input::getInstance()->getKeyDown(SDL_SCANCODE_SPACE) && m_isGrounded && (!(m_is_on_ship && ship->moving()))) {
         int cur_sfx = Mix_PlayChannel(-1, m_jumpSound, 0);
         if(Engine::GetInstance()->getSfx()) {
             Mix_Resume(cur_sfx);
@@ -180,7 +180,7 @@ void Sprites::Update(double dt) {
         m_isGrounded = false;
         m_RigidBody->ApplyForceY(FORWARD * m_JumpForce);
     }
-    if(Input::getInstance()->getKeyDown(SDL_SCANCODE_W) && m_isJumping && m_JumpTime > 0){
+    if(Input::getInstance()->getKeyDown(SDL_SCANCODE_SPACE) && m_isJumping && m_JumpTime > 0){
         m_JumpTime -= dt;
         m_RigidBody->ApplyForceY(FORWARD * m_JumpForce);
     }
@@ -189,6 +189,7 @@ void Sprites::Update(double dt) {
         m_JumpTime = JUMP_TIME;
     }
     m_RigidBody->Update(dt);
+
 
     // fix attack
     if(m_isAttacking && m_AttackTime > 0) {
@@ -250,6 +251,44 @@ void Sprites::Update(double dt) {
         }
     }
 
+    if(m_Transform->X > 79 * 80) {
+        monster_portal->setNearPlayer(true);
+        for(auto &t : monster_portal->getEnemy()) {
+            t->setPlayerPosition(Vector2D(m_Transform->X, m_Transform->Y));
+        }
+    }
+    else {
+        monster_portal->setNearPlayer(false);
+    }
+
+    for(auto &t : monster_portal->getEnemy()) {
+        if(abs(t->getCollider().x - m_Collider->Get().x) < 100 && !t->isToBeDestroyed()) {
+            t->setAttack(true);
+        }
+        else {
+            t->setAttack(false);
+        }
+    }
+
+    for(auto &t : monster_portal->getEnemy()) {
+        auto sword_collider = m_Collider->Get();
+        if(m_Flip == SDL_FLIP_NONE)
+            sword_collider.w += 80;
+        else 
+            sword_collider.x -= 80;
+        auto fish_attack = t->getCollider();
+        if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), fish_attack) && (t->getAttack() == true)) {
+            m_dead = true;
+            break;
+        }
+        if(CollisionHandler::GetInstance()->checkCollision(sword_collider, t->getCollider()) && m_isAttacking) {
+            t->setHit(true);
+        }
+        else {
+            t->setHit(false);
+        }
+    }
+
     // check attack enemy 
     for(auto &t : m_enemy) {
         if(t->getType() == 0) {
@@ -284,11 +323,14 @@ void Sprites::Update(double dt) {
         }
     }
 
-    bomb->active(true);
+    for(auto &t : bomb) {
 
-    if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), bomb->getExploration()->getCollider())
-    && bomb->getExploration()->getExploring()) {
-        m_dead = true;
+        t->active(true);
+
+        if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getExploration()->getCollider())
+        && t->getExploration()->getExploring()) {
+            m_dead = true;
+        }
     }
 
     if(!m_dead) {

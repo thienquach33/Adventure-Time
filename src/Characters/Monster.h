@@ -5,10 +5,11 @@
 #include "../Physics/RigidBody.h"
 #include "../Animation/Animation.h"
 #include "../Physics/Collider.h"
-#include "Object.h"
 #include "item.h"
 #include <SDL2/SDL_mixer.h>
 #include "effect.h"
+#include <queue>
+#include <algorithm>
 
 #define JUMP_TIME 15.0f
 #define JUMP_FORCE 13.0f
@@ -30,30 +31,31 @@ class Monster : public Character {
         virtual void SetAnimation(std::string animation_name, int num, int speed, int delay_attack = 0);
         virtual void AnimationState(double dt);
         inline bool getAttack() { return m_isAttacking; }
-        virtual void addBox(std::vector<Object*> box) { m_box = box; }
         virtual void addItem(std::vector<Item*> item) { m_item = item; }    
         virtual Mix_Chunk* LoadSound(const std::string& path);
         virtual void Respawn();
         virtual int getTurn() { return turn_play; }
         void addEffect(std::vector<Effect*> attack_effect) { m_Effect = attack_effect; }
         void setType(int type) { this->type = type; }
-        void addBall(Object* ball) { m_ball = ball; }
-        Object* getBall() { return m_ball; }
         std::vector<Effect*> getEffect() { return m_Effect; }
 
         virtual std::vector<Monster*> getBullet() { return bullet; }
-
+        virtual void setPlayerPosition(Vector2D player_position) { this->player_position = player_position; }
         int attackStartTicks = 0;
+
+        bool getDead() { return m_dead; }
 
         bool isToBeDestroyed() const {
             return m_tobeDestroy;
         }
 
         virtual void setHit(bool m_hit) { m_isHitting = m_hit; }
+        virtual void setAttack(bool m_attack) { m_isAttacking = m_attack; }
 
         SDL_Rect getCollider() { return m_Collider->Get(); }
 
         virtual int getType() { return type; }
+        virtual std::vector<std::pair<int, int>> Dijkstra();
     private :
         enum class State {
             MovingLeft,
@@ -74,7 +76,7 @@ class Monster : public Character {
         double m_JumpTime;
         double m_JumpForce;
         double m_AttackTime;
-        double m_DeadTime;
+        double m_DeadTime = 0;
         double m_timeAttack = 0, m_recall = 0;
         double m_fire = 0;
         int turn_play, type;
@@ -97,13 +99,11 @@ class Monster : public Character {
         std::vector<Monster*> bullet;
         Collider* m_Collider;
         Collider* m_Trap;
-        std::vector<Object*> m_box;
-        Object* m_ball;
         std::vector<Item*> m_item;
         
 
         Vector2D m_LastSafePosition;
-        Vector2D m_lastSafePostion2;
+        Vector2D player_position;
         Mix_Chunk* m_getCoinSound = nullptr;
         Mix_Chunk* m_jumpSound = nullptr;
         Mix_Chunk* m_hurtSound = nullptr;

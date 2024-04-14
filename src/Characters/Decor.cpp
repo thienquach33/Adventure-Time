@@ -19,14 +19,17 @@ Decor::Decor(Properties* props) : Character(props) {
 }
 
 void Decor::Draw() {
+    for(auto t : m_enemy) {
+        t->Draw();
+    }
+    if(m_type == 5 && portal_show == 0) return;
     m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
     Vector2D cam = Camera::GetInstance()->GetPostision();
-    /*
+    
     SDL_Rect box = m_Collider->Get();
     box.x -= cam.X;
     box.y -= cam.Y;
     SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
-    */
 }
 
 void Decor::Load(std::string name_animation, std::string path_animation, int num, SDL_RendererFlip flip) {
@@ -93,8 +96,73 @@ void Decor::Update(double dt) {
             var = 1;
         }  
     }
+    else if(m_type == 5) {
+        m_Collider->Set(m_Transform->X, m_Transform->Y, m_Width * m_scale, m_Height * m_scale);
+        if(portal_show == 0) {
+            m_respawn += dt;
+            if(m_respawn >= 200.0f) {
+                m_portal_appear = 1;
+                m_respawn = 0;
+                spawn_enemy = 0;
+            }
+            delay_time = 0;
+        }
+        else {
+            if(delay_time == 0) delay_time = SDL_GetTicks();
+        }
+        if(m_portal_idle) {
+            portal_show = 1;
+            SetAnimation("monster-portal-idle", 8, 100, delay_time);
+            m_time_idle += dt;
+
+            if(m_time_idle >= 50.0f && !spawn_enemy && near_player && (int)m_enemy.size() < 3) {
+                Monster* new_enemy = new Monster(new Properties("fish", m_Transform->X, m_Transform->Y, 34, 30, 5));
+                new_enemy->Load("fish-idle", "assets/enemy/Sprites/Fierce Tooth/01-Idle/Idle", 8);
+                new_enemy->Load("fish-run", "assets/enemy/Sprites/Fierce Tooth/02-Run/Run", 6);
+                new_enemy->Load("fish-jump", "assets/enemy/Sprites/Fierce Tooth/03-Jump/Jump", 3);
+                new_enemy->Load("fish-fall", "assets/enemy/Sprites/Fierce Tooth/04-Fall/Fall", 1);
+                new_enemy->Load("fish-attack", "assets/enemy/Sprites/Fierce Tooth/07-Attack/Attack", 5);
+                new_enemy->Load("fish-hit", "assets/enemy/Sprites/Fierce Tooth/08-Hit/Hit", 4);
+                new_enemy->Load("fish-dead", "assets/enemy/Sprites/Fierce Tooth/09-Dead Hit/Dead Hit", 4);
+                new_enemy->Load("fish-deaded", "assets/enemy/Sprites/Fierce Tooth/10-Dead Ground/Dead Ground", 4);
+
+                new_enemy->setType(4);
+                m_enemy.push_back(new_enemy);
+                spawn_enemy = true;
+            }
+
+            if(m_time_idle >= 200.0f) {
+                m_portal_idle = 0;
+                m_portal_disappear = 1;
+                m_time_idle = 0;
+            }
+        }
+        if(m_portal_appear) {
+            portal_show = 1;
+            SetAnimation("monster-portal-appear", 8, 120, delay_time);
+            m_time_appear += dt;
+            if(m_time_appear >= 70.0f) {
+                m_portal_idle = 1;
+                m_portal_appear = 0;
+                m_time_appear = 0;
+            }
+        }
+        if(m_portal_disappear) {
+            SetAnimation("monster-portal-disappear", 8, 120, delay_time);
+            m_time_disappear += dt;
+            if(m_time_disappear >= 70.0f) {
+                m_portal_disappear = 0;
+                portal_show = 0;
+                m_time_disappear = 0;
+            }
+        }
+    }
     AnimationState(dt);
     m_Animation->Update();
+
+    for(auto t : m_enemy) {
+        t->Update(dt);
+    }
 }
 
 void Decor::AnimationState(double dt) {

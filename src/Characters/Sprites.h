@@ -46,11 +46,12 @@ class Sprites : public Character {
         virtual void addHealthBar(Item* health) { health_bar = health; }
         virtual void addFont(TTF_Font* font) { m_font = font; }
         virtual void addSword(Item* sword) { m_sword = sword; }
-        virtual void addBomb(Object* bomb) { this->bomb = bomb; }
+        virtual void addBomb(std::vector<Object*> bomb) { this->bomb = bomb; }
         virtual void addShip(Object* ship) { this->ship = ship; }
         virtual Vector2D getPosition() { return Vector2D(m_Transform->X, m_Transform->Y); }
         virtual void setPos() { m_Transform->X = 8 * 80, m_Transform->Y = 15 * 80; haveSword = false; }
         virtual void addBottle(std::vector<Item*> bottle) { m_bottle = bottle; }
+        virtual void addMontestPortal(Decor* monster_portal) { this->monster_portal = monster_portal; }
 
         int attackStartTicks = 0;
     private :
@@ -90,6 +91,7 @@ class Sprites : public Character {
 
         std::vector<Effect*> m_Effect;
         Object* ship;
+        Decor* monster_portal;
 
         Vector2D m_LastSafePosition;
         Vector2D m_lastSafePostion2;
@@ -98,7 +100,7 @@ class Sprites : public Character {
         Mix_Chunk* m_hurtSound = nullptr;
         Mix_Chunk* m_deadSound = nullptr;
 
-        Object* bomb;
+        std::vector<Object*> bomb;
 
         TTF_Font* m_font;
 };
