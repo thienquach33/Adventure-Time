@@ -17,6 +17,7 @@ Item::Item(Properties* props) : Character(props) {
 }
 
 void Item::Draw() {
+    if(m_type == 8 && !isShow) return;
     m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
 
     Vector2D cam = Camera::GetInstance()->GetPostision();
@@ -67,8 +68,8 @@ void Item::Update(double dt) {
         SetAnimation("health-bar", 1, 100, 0);
     }
     else if(m_type == 4) {
-        SetAnimation("key-level", 10, 100, 0);
-        m_Collider->Set(m_Transform->X, m_Transform->Y, 30 * 5, 30 * 5);
+        SetAnimation("key-level", 8, 100, 0);
+        m_Collider->Set(m_Transform->X, m_Transform->Y, 24 * 5, 24 * 5);
     }
     else if(m_type == 5) {
         SetAnimation("sword", 8, 100);
@@ -82,17 +83,31 @@ void Item::Update(double dt) {
             m_EatTimer += dt;
         }
     }
+    else if(m_type == 7) {
+        SetAnimation("chest-idle", 1, 100);
+        m_Collider->Set(m_Transform->X, m_Transform->Y, m_Width * m_scale, m_Height * m_scale);
+    }
+    else if(m_type == 8) {
+        SetAnimation("red-diamod", 4, 100);
+        m_Collider->Set(m_Transform->X, m_Transform->Y, m_Width * m_scale, m_Height * m_scale);
 
-    AnimationState();
+        if(m_isEtten) {
+            m_EatTimer += dt;
+        }
+    }
+
+    AnimationState(dt);
     m_Animation->Update();
 
 }
 
-void Item::AnimationState() {
-    if(m_type == 0 || m_type == 2 || m_type == 6) {
+void Item::AnimationState(double dt) {
+    if(m_type == 0 || m_type == 2 || m_type == 6 || m_type == 8) {
         if(m_isEtten) {
             if(add_point == false) {
-                Engine::GetInstance()->score_game += (m_type == 0) ? 10 : 30;
+                if(m_type == 0) Engine::GetInstance()->score_game += 10;
+                else if(m_type == 8)  Engine::GetInstance()->score_game += 80;
+                else Engine::GetInstance()->score_game += 30;
                 add_point = true;
             }
             SetAnimation("coin-effect", 3, 200);
@@ -100,6 +115,20 @@ void Item::AnimationState() {
                 m_tobeDestroy = true;
                 m_isEtten = false;
             }
+        }
+    }
+    else if(m_type == 7) {
+        if(m_isEtten) {
+            m_EatTimer += dt;
+            SetAnimation("chest-unlock", 7, 120);
+            if(m_EatTimer >= 30.0f) {
+                unlock4 = true;
+                m_isEtten = false;
+            }
+        }
+        if(unlock4) {
+            diamond->setShow(true);
+            SetAnimation("chest-unlock4", 1, 120);
         }
     }
     else {

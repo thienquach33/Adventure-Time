@@ -52,11 +52,15 @@ class Sprites : public Character {
         virtual void setPos() { m_Transform->X = 8 * 80, m_Transform->Y = 15 * 80; haveSword = false; }
         virtual void addBottle(std::vector<Item*> bottle) { m_bottle = bottle; }
         virtual void addMontestPortal(Decor* monster_portal) { this->monster_portal = monster_portal; }
+        virtual void addKey(Item* key) { m_key = key; }
+        virtual void addChest(Item* chest) { this->chest = chest; }
 
         int attackStartTicks = 0;
     private :
         Animation* m_Animation;
         RigidBody* m_RigidBody;
+
+        double rp_x = 8 * 80, rp_y = 15 * 80;
 
         double m_JumpTime;
         double m_JumpForce;
@@ -66,6 +70,7 @@ class Sprites : public Character {
         int turn_play;
 
         bool haveSword = false;
+        bool haveKey = false;
         bool m_is_on_ship = false;
         bool m_isJumping;
         bool m_isGrounded;
@@ -86,6 +91,8 @@ class Sprites : public Character {
         std::vector<Item*> m_item, m_heal, m_bottle;
         Item* health_bar;
         Item* m_sword;
+        Item* m_key;
+        Item* chest;
         std::vector<Monster*> m_enemy, m_shotter;
         Object* m_portal_gate;
 

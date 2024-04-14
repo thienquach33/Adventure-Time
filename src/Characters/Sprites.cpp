@@ -73,9 +73,10 @@ void Sprites::SetAnimation(std::string animation_name, int num, int speed, int d
 }
 
 void Sprites::Respawn(){
+    haveKey = false;
     haveSword = false;
-    m_Transform->X = 8 * 80;
-    m_Transform->Y = 15 * 80;
+    m_Transform->X = rp_x;
+    m_Transform->Y = rp_y;
     m_dead = false;
     m_DeadTime = 0;
     ++turn_play;
@@ -94,6 +95,11 @@ void Sprites::Update(double dt) {
     m_RigidBody->UnSetForce();
 
     m_wasGrounded = m_isGrounded;
+
+    if(m_Transform->X >= 68 * 80) {
+        rp_x = 68 * 80;
+        rp_y = 14 * 80;
+    }
 
     if(m_Transform->Y >= 11 * 80 || (m_Transform->X >= 22 * 80 && m_Transform->X <= 24 * 80)) {
         m_JumpForce = 13.0f;
@@ -325,7 +331,7 @@ void Sprites::Update(double dt) {
 
     for(auto &t : bomb) {
 
-        t->active(true);
+        t->active(true);    
 
         if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getExploration()->getCollider())
         && t->getExploration()->getExploring()) {
@@ -363,7 +369,7 @@ void Sprites::Update(double dt) {
 
         // check get coin
         for(auto &t : m_item) {
-            if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getCollider())) {\
+            if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getCollider())) {
                 int cur_sfx = Mix_PlayChannel(-1, m_getCoinSound, 0);
                 if(Engine::GetInstance()->getSfx()) {
                     Mix_Resume(cur_sfx);
@@ -394,6 +400,17 @@ void Sprites::Update(double dt) {
         if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), m_sword->getCollider())) {
             haveSword = true;
             m_sword->eat();
+        }
+
+        if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), m_key->getCollider())) {
+            m_key->eat();
+            haveKey = true;
+        }
+
+        if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), chest->getCollider())) {
+            if(haveKey) {
+                chest->eat();
+            }
         }
 
         // check game over

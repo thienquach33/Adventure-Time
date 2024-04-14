@@ -26,6 +26,7 @@ std::vector<Monster*> enemy;
 std::vector<Decor*> decor_things;
 Item* health_bar;
 Item* key_level;
+Item* chest;
 Item* sword;
 std::vector<Item*> heal;
 std::vector<Object*> portal_gate;
@@ -100,7 +101,7 @@ bool Engine::Init() {
     font = TTF_OpenFont("assets/fonts/Stacked pixel.ttf", 30);
 
     // create player
-    player = new Sprites(new Properties("player-idle", 81 * 80, 16 * 80, 64, 40, 5));
+    player = new Sprites(new Properties("player-idle", 8 * 80, 15 * 80, 64, 40, 5));
     
     // no sword    
     player->Load("player-idle", "assets/player/Sprites/Captain Clown Nose/Captain Clown Nose without Sword/01-Idle/Idle", 5);
@@ -149,11 +150,19 @@ bool Engine::Init() {
         heal.push_back(new_heal);
     }
 
-    key_level = new Item(new Properties("key-level", 44 * 80, 14 * 80, 32, 32, 3));
-    key_level->Load("key-level", "assets/Objects/key/key", 10);
+    key_level = new Item(new Properties("key-level", 38 * 80, 15 * 80, 24, 24, 5));
+    key_level->Load("key-level", "assets/item/Sprites/Chest Key/Idle/key", 8);
     key_level->setType(4);
 
+    chest = new Item(new Properties("chest", 5 * 80, 6 * 80 + 40, 32, 32, 4));
+    chest->Load("chest-idle", "assets/item/Sprites/Chest/Idle/idle", 1);
+    chest->Load("chest-unlock", "assets/item/Sprites/Chest/Unlocked/unlock", 8);
+    chest->Load("chest-unlock4", "assets/item/Sprites/Chest/unlock4/unlock4", 1);
+    chest->setType(7);
+
     // origin item
+    player->addChest(chest);
+    player->addKey(key_level);
     player->addEffect(effect);
     player->addHeal(heal);
     player->addHealthBar(health_bar);
@@ -304,6 +313,13 @@ void Engine::Init_Level(int level) {
         coin.push_back(new_coin);
     }
 
+    Item* red_diamod = new Item(new Properties("red-diamod", 3 * 80, 6 * 80, 24, 24, 5));
+    red_diamod->Load("red-diamod", "assets/item/Sprites/Red Diamond/red-diamod", 4);
+    red_diamod->setType(8);
+    coin.push_back(red_diamod);
+
+
+    chest->addDiamond(red_diamod);
 
     bottle.clear();
     Item* new_green_bottle = new Item(new Properties("green-bottle", 46 * 80, 9 * 80 - 20, 13, 17, 4));
@@ -502,8 +518,9 @@ void Engine::Update() {
         if(!sword->isToBeDestroyed()) {
             sword->Update(dt);
         }
-        key_level->Update(dt);
+        if(!key_level->isToBeDestroyed()) key_level->Update(dt);
         ship->Update(dt);
+        chest->Update(dt);
         for(auto t : enemy) {
             t->Update(dt);
         }
@@ -537,8 +554,9 @@ void Engine::Render() {
     if(m_starting) {
         m_LevelMap->Render();
         player->Draw();
-        key_level->Draw();
+        if(!key_level->isToBeDestroyed()) key_level->Draw();
         ship->Draw();
+        chest->Draw();
 
         int bonus = Camera::GetInstance()->GetPostision().X;
 

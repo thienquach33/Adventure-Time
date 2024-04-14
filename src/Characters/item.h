@@ -24,7 +24,7 @@ class Item : public Character {
         virtual void Clean();
         virtual void Load(std::string name_animation, std::string path_animation, int num, SDL_RendererFlip flip = SDL_FLIP_NONE);
         virtual void SetAnimation(std::string animation_name, int num, int speed, int delay_attack = 0);
-        virtual void AnimationState();
+        virtual void AnimationState(double dt);
         virtual void setHit(bool m_hit) { m_isHitting = m_hit; }
 
         virtual void applydx(int dx) { this->dx = dx; }
@@ -36,6 +36,14 @@ class Item : public Character {
         SDL_Rect getCollider() { return m_Collider->Get(); }
 
         int attackStartTicks = 0;
+
+        void addDiamond(Item* diamond) {
+            this->diamond = diamond;
+        }
+
+        void setShow(bool show) {
+            isShow = show;
+        }
 
         bool isToBeDestroyed() const {
             return m_tobeDestroy;
@@ -54,11 +62,14 @@ class Item : public Character {
         double m_JumpForce;
         double m_AttackTime;
 
+        bool isShow = 0;
+
         int heal_of_box = 100;
         int m_type;
 
         int dx = 0;
 
+        bool unlock4 = 0;
         bool m_isJumping;
         bool m_isGrounded;
         bool m_isFalling;
@@ -68,6 +79,7 @@ class Item : public Character {
         bool m_isEtten;
 
         Collider* m_Collider;
+        Item* diamond;
 
         Vector2D m_LastSafePosition;
 };
