@@ -10,8 +10,8 @@ void Camera::Update(double dt) {
         if(m_ViewBox.x < 0) m_ViewBox.x = 0;
         if(m_ViewBox.y < 0) m_ViewBox.y = 0;
 
-        if(m_ViewBox.x > (4 * 2960 - m_ViewBox.w)) {
-            m_ViewBox.x = (4 * 2960 - m_ViewBox.w);
+        if(m_ViewBox.x > (3.5 * 2960 - m_ViewBox.w - 35)) {
+            m_ViewBox.x = (3.5 * 2960 - m_ViewBox.w - 35);
         }
 
         if(m_ViewBox.y > (1790 - m_ViewBox.h - 30)) {

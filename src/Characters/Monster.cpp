@@ -100,13 +100,11 @@ Monster::Monster(Properties* props) : Character(props) {
 void Monster::Draw() {
     m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
 
-    /*
-    Vector2D cam = Camera::GetInstance()->GetPostision();
-    SDL_Rect box = m_Collider->Get();
-    box.x -= cam.X;
-    box.y -= cam.Y;
-    SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
-    */
+    // Vector2D cam = Camera::GetInstance()->GetPostision();
+    // SDL_Rect box = m_Collider->Get();
+    // box.x -= cam.X;
+    // box.y -= cam.Y;
+    // SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
 
     for(auto t : bullet) {
         t->Draw();
@@ -224,41 +222,43 @@ void Monster::Update(double dt) {
         SetAnimation("pink-star-idle", 8, 100);
         m_RigidBody->UnSetForce();
         m_isRunning = false;
-        switch(m_State) {
-        case State::IdleLeft:
-            m_IdleTime += dt;
-            if(m_IdleTime >= 120.0f) { // Adjust the time as needed
-                m_State = State::MovingLeft;
-                m_IdleTime = 0.0;
+        if(!m_isFalling && !m_dead && !m_isHitting && heal_of_enemy > 0) {
+            switch(m_State) {
+            case State::IdleLeft:
+                m_IdleTime += dt;
+                if(m_IdleTime >= 120.0f) { // Adjust the time as needed
+                    m_State = State::MovingLeft;
+                    m_IdleTime = 0.0;
+                }
+                break;
+            case State::IdleRight:
+                m_IdleTime += dt;
+                if(m_IdleTime >= 120.0f) { // Adjust the time as needed
+                    m_State = State::MovingRight;
+                    m_IdleTime = 0.0;
+                }
+                break;
+            case State::MovingLeft:
+                m_isRunning = true;
+                m_RigidBody->ApplyForceX(FORWARD * 2.0f); // Adjust the force as needed
+                m_MoveTime += dt;
+                if(m_MoveTime >= 120.0f) { // Adjust the time as needed
+                    m_State = State::IdleRight;
+                    m_MoveTime = 0.0;
+                    m_Flip = SDL_FLIP_HORIZONTAL;
+                }
+                break;
+            case State::MovingRight:
+                m_isRunning = true;
+                m_RigidBody->ApplyForceX(BACKWARD * 2.0f); // Adjust the force as needed
+                m_MoveTime += dt;
+                if(m_MoveTime >= 120.0f) { // Adjust the time as needed
+                    m_State = State::IdleLeft;
+                    m_MoveTime = 0.0;
+                    m_Flip = SDL_FLIP_NONE;
+                }
+                break;
             }
-            break;
-        case State::IdleRight:
-            m_IdleTime += dt;
-            if(m_IdleTime >= 120.0f) { // Adjust the time as needed
-                m_State = State::MovingRight;
-                m_IdleTime = 0.0;
-            }
-            break;
-        case State::MovingLeft:
-            m_isRunning = true;
-            m_RigidBody->ApplyForceX(FORWARD * 2.0f); // Adjust the force as needed
-            m_MoveTime += dt;
-            if(m_MoveTime >= 120.0f) { // Adjust the time as needed
-                m_State = State::IdleRight;
-                m_MoveTime = 0.0;
-                m_Flip = SDL_FLIP_HORIZONTAL;
-            }
-            break;
-        case State::MovingRight:
-            m_isRunning = true;
-            m_RigidBody->ApplyForceX(BACKWARD * 2.0f); // Adjust the force as needed
-            m_MoveTime += dt;
-            if(m_MoveTime >= 120.0f) { // Adjust the time as needed
-                m_State = State::IdleLeft;
-                m_MoveTime = 0.0;
-                m_Flip = SDL_FLIP_NONE;
-            }
-            break;
         }
     }
     else if(type == 2) {
@@ -423,6 +423,27 @@ void Monster::AnimationState(double dt) {
     else if(type == 1) {
         if(m_isRunning) {
             SetAnimation("pink-star-attack", 4, 100);
+            m_Collider->Set(m_Transform->X, m_Transform->Y, m_Width * m_scale, m_Height * m_scale);
+        }
+        if(m_isHitting) {
+            if(heal_of_enemy >= 10) {
+                heal_of_enemy = std::max(heal_of_enemy - 10, 0);
+                int cur = SDL_GetTicks();
+                SetAnimation("pink-star-hit", 4, 200, cur);
+            }
+        }
+        if(heal_of_enemy == 0) {
+            if(m_DeadTime >= 200.0f) {
+                m_tobeDestroy = true;
+                SetAnimation("pink-star-deaded", 4, 200, 0);    
+            }
+            else {
+                if(add_point == false) {
+                    Engine::GetInstance()->score_game += 200;
+                    add_point = true;
+                }
+                SetAnimation("pink-star-dead", 4, 200, 0);
+            }
         }
     }
     else if(type == 4) {

@@ -44,11 +44,11 @@ Sprites::Sprites(Properties* props) : Character(props) {
 
 void Sprites::Draw() {
     m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
-    Vector2D cam = Camera::GetInstance()->GetPostision();
-    SDL_Rect box = m_Collider->Get();
-    box.x -= cam.X;
-    box.y -= cam.Y;
-    SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
+    // Vector2D cam = Camera::GetInstance()->GetPostision();
+    // SDL_Rect box = m_Collider->Get();
+    // box.x -= cam.X;
+    // box.y -= cam.Y;
+    // SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
 }
 
 void Sprites::Load(std::string name_animation, std::string path_animation, int num, SDL_RendererFlip flip) {
@@ -73,15 +73,13 @@ void Sprites::SetAnimation(std::string animation_name, int num, int speed, int d
 }
 
 void Sprites::Respawn(){
-    haveKey = false;
-    haveSword = false;
     m_Transform->X = rp_x;
     m_Transform->Y = rp_y;
     m_dead = false;
     m_DeadTime = 0;
     ++turn_play;
-    Engine::GetInstance()->SetGameOver(true);
-    Engine::GetInstance()->HighScore.insert(Engine::GetInstance()->score_game);
+    if(turn_play > 3) Engine::GetInstance()->SetGameOver(true);
+    if(turn_play == 4)Engine::GetInstance()->HighScore.insert(Engine::GetInstance()->score_game);
 }
 
 void Sprites::Update(double dt) {
@@ -318,8 +316,19 @@ void Sprites::Update(double dt) {
             }
         }
         else if(t->getType() == 1) {
-            if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getCollider())) {
+            if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getCollider()) && !t->isToBeDestroyed()) {
                 m_dead = true;
+            }
+            auto sword_collider = m_Collider->Get();
+            if(m_Flip == SDL_FLIP_NONE)
+                sword_collider.w += 80;
+            else 
+                sword_collider.x -= 80;
+            if(CollisionHandler::GetInstance()->checkCollision(sword_collider, t->getCollider()) && m_isAttacking) {
+                t->setHit(true);
+            }
+            else {
+                t->setHit(false);
             }
         }
         for(auto bl : t->getBullet()) {
@@ -407,9 +416,12 @@ void Sprites::Update(double dt) {
             haveKey = true;
         }
 
-        if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), chest->getCollider())) {
-            if(haveKey) {
-                chest->eat();
+        for(auto t : chest) {
+
+            if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getCollider())) {
+                if(haveKey) {
+                    t->eat();
+                }
             }
         }
 
@@ -437,7 +449,7 @@ void Sprites::Update(double dt) {
     if(level_cur == 1) {
 
         double health_bar_pos = std::max((double) 45, m_Transform->X - 1400);
-        health_bar_pos = std::min(health_bar_pos, (double) 3100);
+        health_bar_pos = std::min(health_bar_pos, (double) 7400);
 
         health_bar->setCollider(health_bar_pos, 30, 1, 1);
     

@@ -26,7 +26,7 @@ std::vector<Monster*> enemy;
 std::vector<Decor*> decor_things;
 Item* health_bar;
 Item* key_level;
-Item* chest;
+std::vector<Item*> v_chest;
 Item* sword;
 std::vector<Item*> heal;
 std::vector<Object*> portal_gate;
@@ -49,10 +49,10 @@ std::vector<std::pair<int, int>> sliver_postision_item[3] = {
     { }
 };
 std::vector<std::pair<int, int>> enemy_postision[3] = {
-    { {22, 12}, {45, 14}, {73, 14}}
+    { {22, 12}, {45, 14}, {73, 14}, {90, 3}}
 };
 std::vector<std::pair<int, int>> pink_start_pos = {
-    {81, 4}
+    {81, 4}, {113, 15}
 };
 std::vector<std::pair<int, int>> gold_postision_item[3] = {
     { {2, 16} , {12, 7}, {33, 14}, {46, 15}, {126, 9}, {74, 14}, {83, 19}, {29, 6}},
@@ -68,7 +68,17 @@ std::vector<std::pair<int, int>> portal_gate_postision[3] = {
 std::vector<std::pair<int, int>> pos_tree = {
     {140, 1340},
     {14 * 80 - 23, 18 * 80},
-    {17 * 80 - 23, 17 * 80}
+    {17 * 80 - 23, 17 * 80},
+    {71 * 80 - 23, 15 * 80},
+    {78 * 80 - 23, 15 * 80},
+    {109 * 80 - 23, 15 * 80},
+    {115 * 80 - 23, 15 * 80},
+    {112 * 80 - 23, 3 * 80},
+    {89 * 80 - 23, 3 * 80},
+    {84 * 80 - 23, 18 * 80},
+    {92 * 80 - 23, 18 * 80},
+    {89 * 80 - 23, 3 * 80},
+    {79 * 80 - 23, 5 * 80}
 };
 
 std::vector<std::pair<int, int>> pos_bomb = {
@@ -136,36 +146,7 @@ bool Engine::Init() {
     player_attack_effected3->Load("player-attack-effected3", "assets/player/Sword Effects/26-Attack 3/Attack 3", 3);
     effect.push_back(player_attack_effected3);
 
-    // heal
-    health_bar = new Item(new Properties("health-bar", 17 * 80, 10 * 80, 154, 62, 3));
-    health_bar->Load("health-bar", "assets/ui/Health_Bar", 1);
-    health_bar->setType(3);
-
-    // sword
-
-    for(int i = 0; i < NUM_OF_HEAL; i++) {
-        Item* new_heal = new Item(new Properties("heal-full", 17 * 80 + i * 80, 10 * 80, 22, 19, 3));
-        new_heal->Load("heal-full", "assets/ui/Heart", 1);
-        new_heal->setType(1);
-        heal.push_back(new_heal);
-    }
-
-    key_level = new Item(new Properties("key-level", 38 * 80, 15 * 80, 24, 24, 5));
-    key_level->Load("key-level", "assets/item/Sprites/Chest Key/Idle/key", 8);
-    key_level->setType(4);
-
-    chest = new Item(new Properties("chest", 5 * 80, 6 * 80 + 40, 32, 32, 4));
-    chest->Load("chest-idle", "assets/item/Sprites/Chest/Idle/idle", 1);
-    chest->Load("chest-unlock", "assets/item/Sprites/Chest/Unlocked/unlock", 8);
-    chest->Load("chest-unlock4", "assets/item/Sprites/Chest/unlock4/unlock4", 1);
-    chest->setType(7);
-
-    // origin item
-    player->addChest(chest);
-    player->addKey(key_level);
     player->addEffect(effect);
-    player->addHeal(heal);
-    player->addHealthBar(health_bar);
     player->addFont(font);
 
     // map create
@@ -285,6 +266,55 @@ bool Engine::Init() {
 }
 
 void Engine::Init_Level(int level) {
+    player->setSpawnPos(8 * 80, 15 * 80);
+    player->setTurn(0);
+    player->Respawn();
+    player->setHaveKey(0);
+    player->setHaveSword(0);
+    key_level = new Item(new Properties("key-level", 38 * 80, 15 * 80, 24, 24, 5));
+    key_level->Load("key-level", "assets/item/Sprites/Chest Key/Idle/key", 8);
+    key_level->setType(4);
+
+    v_chest.clear();
+    for(int i = 0; i < 2; i++) {
+        int x, y;
+        if(i == 0) {
+            x = 5;
+            y = 6;
+        }
+        else {
+            x = 77;
+            y = 5;
+        }
+
+        Item* chest = new Item(new Properties("chest", x * 80, y * 80 + 40, 32, 32, 4));
+        chest->Load("chest-idle", "assets/item/Sprites/Chest/Idle/idle", 1);
+        chest->Load("chest-unlock", "assets/item/Sprites/Chest/Unlocked/unlock", 8);
+        chest->Load("chest-unlock4", "assets/item/Sprites/Chest/unlock4/unlock4", 1);
+        chest->setType(7);
+        v_chest.push_back(chest);
+    }
+
+    heal.clear();
+    // origin item
+    player->addChest(v_chest);
+    player->addKey(key_level);
+    // heal
+    health_bar = new Item(new Properties("health-bar", 17 * 80, 10 * 80, 154, 62, 3));
+    health_bar->Load("health-bar", "assets/ui/Health_Bar", 1);
+    health_bar->setType(3);
+
+    player->addHealthBar(health_bar);
+    // sword
+    
+    for(int i = 0; i < NUM_OF_HEAL; i++) {
+        Item* new_heal = new Item(new Properties("heal-full", 17 * 80 + i * 80, 10 * 80, 22, 19, 3));
+        new_heal->Load("heal-full", "assets/ui/Heart", 1);
+        new_heal->setType(1);
+        heal.push_back(new_heal);
+    }
+    player->addHeal(heal);
+
     box.clear();
     for(auto pos : postision_box[level - 1]) {
         Object* new_box = new Object(new Properties("box-idle", pos.first * 80, pos.second * 80, 28, 22, 5));
@@ -318,8 +348,7 @@ void Engine::Init_Level(int level) {
     red_diamod->setType(8);
     coin.push_back(red_diamod);
 
-
-    chest->addDiamond(red_diamod);
+    v_chest[0]->addDiamond(red_diamod);
 
     bottle.clear();
     Item* new_green_bottle = new Item(new Properties("green-bottle", 46 * 80, 9 * 80 - 20, 13, 17, 4));
@@ -361,6 +390,9 @@ void Engine::Init_Level(int level) {
         Monster* new_enemy = new Monster(new Properties("pink-star", pos.first * 80, pos.second * 80, 34, 30, 5));
         new_enemy->Load("pink-star-idle", "assets/enemy/Sprites/Pink Star/01-Idle/Idle", 8);
         new_enemy->Load("pink-star-attack", "assets/enemy/Sprites/Pink Star/07-Attack/Attack", 4);
+        new_enemy->Load("pink-star-hit", "assets/enemy/Sprites/Pink Star/08-Hit/Hit", 4);
+        new_enemy->Load("pink-star-dead", "assets/enemy/Sprites/Pink Star/09-Dead Hit/Dead Hit", 4);
+        new_enemy->Load("pink-star-deaded", "assets/enemy/Sprites/Pink Star/10-Dead Ground/Dead Ground", 4);
         new_enemy->setType(1);
         enemy.push_back(new_enemy);
     }
@@ -482,10 +514,6 @@ void Engine::Update() {
                 t->getExploration()->Update(dt);
             }
         }
-        if(player->getTurn() > NUM_OF_HEAL) {
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Game Over", "You Lose", NULL);
-            Quit();
-        }   
         m_LevelMap->Update();
         for(auto it = heal.begin(); it != heal.end(); /* no increment here */) {
             if((*it)->isToBeDestroyed()) {
@@ -520,7 +548,9 @@ void Engine::Update() {
         }
         if(!key_level->isToBeDestroyed()) key_level->Update(dt);
         ship->Update(dt);
-        chest->Update(dt);
+        for(auto chest : v_chest) {
+            chest->Update(dt);
+        }
         for(auto t : enemy) {
             t->Update(dt);
         }
@@ -556,7 +586,9 @@ void Engine::Render() {
         player->Draw();
         if(!key_level->isToBeDestroyed()) key_level->Draw();
         ship->Draw();
-        chest->Draw();
+        for(auto chest : v_chest) {
+            chest->Draw();
+        }
 
         int bonus = Camera::GetInstance()->GetPostision().X;
 

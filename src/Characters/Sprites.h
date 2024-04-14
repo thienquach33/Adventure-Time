@@ -53,7 +53,14 @@ class Sprites : public Character {
         virtual void addBottle(std::vector<Item*> bottle) { m_bottle = bottle; }
         virtual void addMontestPortal(Decor* monster_portal) { this->monster_portal = monster_portal; }
         virtual void addKey(Item* key) { m_key = key; }
-        virtual void addChest(Item* chest) { this->chest = chest; }
+        virtual void addChest(std::vector<Item*> chest) { this->chest = chest; }
+        virtual void setTurn(int turn) { turn_play = turn; }
+        virtual void setSpawnPos(int x, int y) {
+            rp_x = x;
+            rp_y = y;
+        }
+        virtual void setHaveSword(bool haveSword) { this->haveSword = haveSword; }
+        virtual void setHaveKey(bool haveKey) { this->haveKey = haveKey; }
 
         int attackStartTicks = 0;
     private :
@@ -92,7 +99,7 @@ class Sprites : public Character {
         Item* health_bar;
         Item* m_sword;
         Item* m_key;
-        Item* chest;
+        std::vector<Item*> chest;
         std::vector<Monster*> m_enemy, m_shotter;
         Object* m_portal_gate;
 
