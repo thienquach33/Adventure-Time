@@ -35,3 +35,32 @@ Bạn sẽ dành chiền thắng khi tiêu diệt vượt qua hết các thử t
 - L : Attack 3
 ### Các đối tượng có trong game
 
+#### Vật phẩm
+- Chìa khóa & Kho báu : Bạn cần tìm được chìa khóa để có thể mở được hòm kho báu.
+
+![1 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/chest.gif)
+
+- Tiền : Có 2 loại tiền là tiền vàng và tiền bạc , khi nhặt được mỗi loại tiền sẽ cho bạn tăng 1 số điểm nhất định.
+
+![2 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/coin.gif)
+
+- Đá quý : Có 3 loại đá quý , khi nhặt được mỗi loại đá sẽ cho bạn tăng 1 số điểm nhất định.
+
+![3 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/diamod.gif)
+
+#### Quái vật
+- Cá Răng Sắc (Sharpjaw): Loài cá kích thước lớn với hàm răng sắc nhọn như lưỡi dao. Chúng sống trong vùng biển xung quanh hòn đảo và rình rập các thủy thủ bất cẩn bằng cách tấn công bất ngờ từ dưới đáy biển.
+
+![4 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/fish.gif)
+
+- Vua Cua Đỏ (Redclaw King): Một con cua khổng lồ với chiều rộng vượt qua mười mét, được biết đến với sự hung dữ và khí phách. Vua Cua Đỏ là bậc thầy của vùng biển này, và nó sẵn lòng bảo vệ lãnh thổ của mình bằng bất kỳ giá nào.
+
+![5 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/king_crab.gif)
+
+- Sao Biển Ám (Shadow Starfish): Loài sao biển đen tối, có khả năng phát sáng rất yếu, giúp chúng lẩn trốn trong bóng tối của lòng đại dương. Tuy nhiên, khả năng này cũng làm cho chúng trở nên đáng sợ khi chúng tấn công bất ngờ từ bên dưới và hút sức mạnh từ nạn nhân của chúng.
+
+![6 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/star.gif)
+
+- Trụ thổ dân : Những thổ dân ở vùng đất này vô cùng hung dữ nhưng họ lại quá bận rộn để có thể theo dõi và canh chừng hòn đảo. Vì vậy , họ dựng lên 1 pháo đài vô cùng kiên cố và nguy hiểm cho bất cứ ai có ý định lăm le đến vùng đất của họ.
+
+![7 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/totem.gif)
