@@ -6,6 +6,7 @@
 #include "../Animation/Animation.h"
 #include "../Physics/Collider.h"
 #include "Decor.h"
+#include "item.h"
 
 #define JUMP_TIME 15.0f
 #define JUMP_FORCE 12.0f
@@ -53,6 +54,7 @@ class Object : public Character {
         }
 
         void setOldPos(std::pair<int, int> pos) { old_pos = pos; }
+        void addCoin(Item* new_coin) { this->coin = coin; }
     private :
         Animation* m_Animation;
         RigidBody* m_RigidBody;
@@ -88,6 +90,8 @@ class Object : public Character {
 
         Vector2D m_LastSafePosition;
         std::pair<int, int> old_pos;
+
+        Item* coin;
 };
 
 #endif // OBJECT_H

@@ -39,12 +39,16 @@ Object* ship;
 const int NUM_OF_HEAL = 3;
 
 std::vector<std::pair<int, int>> postision_box[3] = {
-     { {6, 15}, {15, 15}, {126, 8}, {112, 15}, {100, 3}, {112, 3}}, 
+     { {6, 15}, {15, 15}, {124, 8}, {112, 15}, {115, 3}}, 
      {  },
      { }
 };
+
+std::vector<std::pair<int, int>> red_diamond_pos = {
+    { 3, 5 }, {28, 15},  {74, 14}, {96, 18}
+};
 std::vector<std::pair<int, int>> sliver_postision_item[3] = {
-    { {12, 19}, {20, 16}, {27, 15}, {70, 16}, {103, 14}, {91, 19}, {124, 19}, {23, 5}, {17, 6}, {97, 17}},
+    { {12, 19}, {20, 16}, {27, 15}, {70, 16}, {103, 14}, {91, 19}, {126, 8}, {23, 5}, {17, 6}, {97, 17}},
     { },
     { }
 };
@@ -78,7 +82,8 @@ std::vector<std::pair<int, int>> pos_tree = {
     {84 * 80 - 23, 18 * 80},
     {92 * 80 - 23, 18 * 80},
     {89 * 80 - 23, 3 * 80},
-    {79 * 80 - 23, 5 * 80}
+    {79 * 80 - 23, 5 * 80},
+    {44 * 80 - 23, 14 * 80}
 };
 
 std::vector<std::pair<int, int>> pos_bomb = {
@@ -276,15 +281,24 @@ void Engine::Init_Level(int level) {
     key_level->setType(4);
 
     v_chest.clear();
-    for(int i = 0; i < 2; i++) {
+    coin.clear();
+    for(int i = 0; i < 4; i++) {
         int x, y;
         if(i == 0) {
             x = 5;
             y = 6;
         }
-        else {
+        else if(i == 1){
             x = 77;
             y = 5;
+        }
+        else if(i == 2) {
+            x = 88;
+            y = 18;
+        }
+        else if(i == 3) {
+            x = 126;
+            y = 8;
         }
 
         Item* chest = new Item(new Properties("chest", x * 80, y * 80 + 40, 32, 32, 4));
@@ -292,6 +306,45 @@ void Engine::Init_Level(int level) {
         chest->Load("chest-unlock", "assets/item/Sprites/Chest/Unlocked/unlock", 8);
         chest->Load("chest-unlock4", "assets/item/Sprites/Chest/unlock4/unlock4", 1);
         chest->setType(7);
+    
+        std::string name_map = "map-" + std::to_string(i);
+
+        int posx = (x - 2) * 80;
+        int posy = y * 80;
+
+        if(i == 1) {
+            posx = 77 * 80;
+            posy = 3 * 80;
+        }
+
+        if(i == 2) {
+            posx = 89 * 80;
+            posy = 17 * 80;
+        }
+        if(i == 3) {
+            posx = 120 * 80;
+            posy = 5 * 80;
+        }
+
+        Item* map = new Item(new Properties(name_map, posx, posy, 20, 20, 4));
+        if(i == 0) {
+            map->Load(name_map, "assets/item/Sprites/Small Maps/Small Map 1/map-01", 1);
+            map->setType(9);
+        }
+        else if(i == 1) {
+            map->Load(name_map, "assets/item/Sprites/Small Maps/Small Map 2/map-02", 1);
+            map->setType(10);
+        }
+        else if(i == 2) {
+            map->Load(name_map, "assets/item/Sprites/Small Maps/Small Map 3/map-03", 1);
+            map->setType(11);
+        }
+        else if(i == 3) {
+            map->Load(name_map, "assets/item/Sprites/Small Maps/Small Map 4/map-04", 1);
+            map->setType(12);
+        }
+        chest->addMap(map);
+        coin.push_back(map);
         v_chest.push_back(chest);
     }
 
@@ -325,8 +378,6 @@ void Engine::Init_Level(int level) {
         box.push_back(new_box);
     }
 
-    // create coin
-    coin.clear();
     for(auto pos : sliver_postision_item[level - 1]) {
         Item* new_coin = new Item(new Properties("sliver-coin", pos.first * 80, pos.second * 80, 16, 16, 5));
         new_coin->Load("sliver-coin", "assets/Objects/Silver Coin/sliver-coin", 4);
@@ -343,12 +394,12 @@ void Engine::Init_Level(int level) {
         coin.push_back(new_coin);
     }
 
-    Item* red_diamod = new Item(new Properties("red-diamod", 3 * 80, 6 * 80, 24, 24, 5));
-    red_diamod->Load("red-diamod", "assets/item/Sprites/Red Diamond/red-diamod", 4);
-    red_diamod->setType(8);
-    coin.push_back(red_diamod);
-
-    v_chest[0]->addDiamond(red_diamod);
+    for(auto pos : red_diamond_pos) {
+        Item* red_diamod = new Item(new Properties("red-diamod", pos.first * 80, pos.second * 80, 24, 24, 5));
+        red_diamod->Load("red-diamod", "assets/item/Sprites/Red Diamond/red-diamod", 4);
+        red_diamod->setType(8);
+        coin.push_back(red_diamod);
+    }
 
     bottle.clear();
     Item* new_green_bottle = new Item(new Properties("green-bottle", 46 * 80, 9 * 80 - 20, 13, 17, 4));
@@ -403,6 +454,11 @@ void Engine::Init_Level(int level) {
     enemy_totem->setType(2);
     enemy.push_back(enemy_totem);
 
+    Monster* enemy_totem_2 = new Monster(new Properties("totem_2", 99 * 80, 3 * 80, 24, 32, 4));
+    enemy_totem_2->Load("totem-2-idle", "assets/enemy/Sprites/Totems/Head 2/Idle 1/idle", 1);
+    enemy_totem_2->Load("totem-2-attack", "assets/enemy/Sprites/Totems/Head 2/Attack 1/attack", 6);
+    enemy_totem_2->setType(5);
+    enemy.push_back(enemy_totem_2);
 
     for(int i = 0; i < 2; i++) {
         Object* new_ball = new Object(new Properties("ball-idle", pos_bomb[i].first * 80, pos_bomb[i].second * 80, 16, 16, 5));
@@ -498,7 +554,7 @@ void Engine::Update() {
             t->Update(0);
         }
     }
-    if(m_starting && !game_over_screen && !menu_screen && !high_score_screen && !setting_screen) {
+    if(m_starting && !game_over_screen && !menu_screen && !high_score_screen && !setting_screen && !winner) {
         double dt = Timer::getInstance()->getDeltaTime();
         for(int LEVEL = 1; LEVEL <= 3; LEVEL++) {
             if(player->getLevel() == LEVEL && !loaded_level[LEVEL - 1]) {
@@ -580,7 +636,7 @@ void Engine::Update() {
 
 void Engine::Render() {
     SDL_RenderClear(m_Renderer);
-    darker = (game_over_screen == true || menu_screen == true || high_score_screen == true || (setting_screen && m_starting));
+    darker = (winner == true || game_over_screen == true || menu_screen == true || high_score_screen == true || (setting_screen && m_starting));
     if(m_starting) {
         m_LevelMap->Render();
         player->Draw();
@@ -593,6 +649,7 @@ void Engine::Render() {
         int bonus = Camera::GetInstance()->GetPostision().X;
 
         std::string current_score = "score " + std::to_string(score_game);
+        std::ifstream HighScoreFileget("src/Core/HighScore.txt");
 
         for(int i = 0; i < (int) current_score.size(); i++) {
             std::string text_name = "big-text-" + std::to_string(current_score[i] - 'a' + 1);
@@ -600,7 +657,43 @@ void Engine::Render() {
                 text_name = "big-text-" + std::to_string(current_score[i] - '0' + 26);
             }
             if(current_score[i] == '0') text_name = "big-text-36";
-            TextureManager::GetInstance()->Draw(text_name, 500 + i * 60 + bonus, 100, 10, 11, 6);
+            TextureManager::GetInstance()->Draw(text_name, 550 + i * 50 + bonus, 0, 10, 11, 5);
+        }
+
+        int high_score_best = 0;
+
+        HighScoreFileget >> high_score_best;
+        
+        HighScoreFileget.close();
+
+        high_score_best = std::max(high_score_best, score_game);
+
+        std::fstream HighScoreFile;
+        HighScoreFile.open("src/Core/HighScore.txt");
+
+        HighScoreFile << high_score_best;
+
+        HighScoreFile.close();
+
+        std::string high_score_all_game = "high score " + std::to_string(high_score_best);
+
+        for(int i = 0; i < (int) high_score_all_game.size(); i++) {
+            std::string text_name = "big-text-" + std::to_string(high_score_all_game[i] - 'a' + 1);
+            if(high_score_all_game[i] >= '1' && high_score_all_game[i] <= '9') {
+                text_name = "big-text-" + std::to_string(high_score_all_game[i] - '0' + 26);
+            }
+            if(high_score_all_game[i] == '0') text_name = "big-text-36";
+            TextureManager::GetInstance()->Draw(text_name, 550 + i * 50 + bonus, 80, 10, 11, 5);
+        }
+
+        std::string num_map = "map: " + std::to_string((int) MapFinal.size());
+        for(int i = 0; i < (int) num_map.size(); i++) {
+            std::string text_name = "big-text-" + std::to_string(num_map[i] - 'a' + 1);
+            if(num_map[i] >= '1' && num_map[i] <= '9') {
+                text_name = "big-text-" + std::to_string(num_map[i] - '0' + 26);
+            }
+            if(num_map[i] == '0') text_name = "big-text-36";
+            TextureManager::GetInstance()->Draw(text_name, 550 + i * 50 + bonus, 160, 10, 11, 5);
         }
 
         for(auto t : enemy) {
@@ -657,7 +750,11 @@ void Engine::Render() {
     if(esc_menu) {
         TextureManager::GetInstance()->Draw("menu-game", 0, 0, 128, 128, 5);
     }
-    if(player->getTurn() > 0) {
+    if((int) MapFinal.size() == 4) {
+        winner = true;
+    }
+    GameWinner();
+    if(player->getTurn() > 3) {
         GameOverScreen();
         // Quit();
     } 
@@ -936,6 +1033,96 @@ std::vector<std::string> icon_td = {
 std::vector<std::pair<int, int>> icon_pos = {
     {1265, 1058}, {1450, 1058}
 };
+
+void Engine::GameWinner() {
+    if(winner == false || high_score_screen) return;
+    int bonus = Camera::GetInstance()->GetPostision().X;
+    for(int i = 0; i < NUM_OF_BANNER; i++) {
+        std::string game_over_banner = "banner-" + banner_text[i];
+        TextureManager::GetInstance()->DrawMenu(game_over_banner, banner[i].first + bonus, banner[i].second, 32, 32, 5);
+    }
+
+    for(int i = 0; i < NUM_OF_PAPER; i++) {
+        std::string game_over_paper = "paper-" + paper_text[i];
+        TextureManager::GetInstance()->DrawMenu(game_over_paper, paper[i].first - 3 + bonus, paper[i].second, 32, 32, 5);    
+    }
+
+    std::string score = "score:" + std::to_string(score_game);
+    for(int i = 0; i < (int) score.size(); i++) {
+        std::string text_name = "text-" + std::to_string(score[i] - 'a' + 1);
+        if(score[i] == ':') text_name = "text-50";
+        if(score[i] >= '1' && score[i] <= '9') {
+            text_name = "text-" + std::to_string(score[i] - '0' + 26);
+        }
+        if(score[i] == '0') text_name = "text-36";
+        TextureManager::GetInstance()->DrawMenu(text_name, 1200 + i * 60 + bonus, 700, 5, 6, 10);
+    }
+
+    for(int i = 0; i < NUM_OF_BANNER_P; i++) {
+        std::string game_over_paper = "banner-p-" + banner_text_p[i];
+        TextureManager::GetInstance()->DrawMenu(game_over_paper, banner_p[i].first - 3 - 30 + 15 + bonus, banner_p[i].second, 32, 32, 8);    
+    }
+
+    std::string game_text = "game";
+    for(int i = 0; i < (int) game_text.size(); i++) {
+        std::string text_name = "big-text-" + std::to_string(game_text[i] - 'a' + 1);
+        TextureManager::GetInstance()->DrawMenu(text_name, 1250 + i * 50 - 70 + 12 + bonus, 395, 10, 11, 5);
+    }
+    std::string over_text = "winner";
+    for(int i = 0; i < (int) over_text.size(); i++) {
+        std::string text_name = "big-text-" + std::to_string(over_text[i] - 'a' + 1);
+        if(over_text[i] == '!') text_name = "46";
+        TextureManager::GetInstance()->DrawMenu(text_name, 1580 + i * 50 - 120 + 12 + bonus, 355, 10, 11, 5);
+    }
+    for(int i = 0; i < 2; i++) {
+        std::string exit_banner_name = "banner-p-" + exit_banner_t[i];
+        TextureManager::GetInstance()->DrawMenu(exit_banner_name, exit_banner[i].first - 3 - 30 + 15 + bonus, exit_banner[i].second, 32, 32, 6);
+    }
+    std::string exit_text = "exit";
+    for(int i = 0; i < (int) exit_text.size(); i++) {
+        std::string exit_text_t = "text-" + std::to_string(exit_text[i] - 'a' + 1);
+        TextureManager::GetInstance()->DrawMenu(exit_text_t, 1910 - 180 + i * 36 - 70 + 12 + bonus, 1058, 5, 6, 6);
+
+        SDL_Rect temp = {1910 - 180 + i * 36 - 70 + 12, 1058, 5 * 6, 6 * 5};
+        SDL_Rect temp_mouse = Mouse::getInstance()->getPoint();
+        if(SDL_HasIntersection(&temp, &temp_mouse)) {
+            if(Mouse::getInstance()->oneClickedCheck()) {
+                winner = false;
+                score_game = 0;
+                m_starting = false;
+                Init_Level(1);
+                return;
+            }
+        }
+    }
+
+    for(int i = 0; i < 3; i++) {
+        std::string yellow_button_name = "yellow-button-" + yellow_button_text[i];
+        TextureManager::GetInstance()->DrawMenu(yellow_button_name, yellow_button[i].first + bonus, yellow_button[i].second, 14, 14, 5);                
+
+        SDL_Rect temp = {yellow_button[i].first, yellow_button[i].second, 14 * 5, 14 * 5};
+        SDL_Rect temp_mouse = Mouse::getInstance()->getPoint();
+        if(SDL_HasIntersection(&temp, &temp_mouse)) {
+            if(Mouse::getInstance()->oneClickedCheck()) {
+                if(i == 0) {
+                    high_score_screen = true;
+                    return;
+                }
+                else {
+                    score_game = 0;
+                    winner = false;
+                    Init_Level(1);
+                    return;
+                }
+            }
+        }
+    }
+
+    for(int i = 0; i < 2; i++) {
+        std::string icon_name = "icon-" + icon_td[i];
+        TextureManager::GetInstance()->DrawMenu(icon_name, icon_pos[i].first + bonus, icon_pos[i].second, 8, 6, 5);
+    }
+}
 
 void Engine::GameOverScreen() {
     if(game_over_screen == false || high_score_screen) return;

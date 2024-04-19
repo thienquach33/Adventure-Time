@@ -17,10 +17,10 @@ Item::Item(Properties* props) : Character(props) {
 }
 
 void Item::Draw() {
-    if(m_type == 8 && !isShow) return;
+    if(m_type >= 9 && !isShow) return;
     m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
 
-    Vector2D cam = Camera::GetInstance()->GetPostision();
+    // Vector2D cam = Camera::GetInstance()->GetPostision();
     // SDL_Rect box = m_Collider->Get();
     // box.x -= cam.X;
     // box.y -= cam.Y;
@@ -95,6 +95,15 @@ void Item::Update(double dt) {
             m_EatTimer += dt;
         }
     }
+    else if(m_type >= 9) {
+        std::string name_map = "map-" + std::to_string(m_type - 9);
+        SetAnimation(name_map, 1, 100);
+        m_Collider->Set(m_Transform->X, m_Transform->Y, m_Width * m_scale, m_Height * m_scale);
+
+        if(m_isEtten) {
+            m_EatTimer += dt;
+        }
+    }
 
     AnimationState(dt);
     m_Animation->Update();
@@ -102,7 +111,7 @@ void Item::Update(double dt) {
 }
 
 void Item::AnimationState(double dt) {
-    if(m_type == 0 || m_type == 2 || m_type == 6 || m_type == 8) {
+    if(m_type == 0 || m_type == 2 || m_type == 6 || m_type == 8 || m_type >= 9) {
         if(m_isEtten) {
             if(add_point == false) {
                 if(m_type == 0) Engine::GetInstance()->score_game += 10;
@@ -112,6 +121,7 @@ void Item::AnimationState(double dt) {
             }
             SetAnimation("coin-effect", 3, 200);
             if(m_EatTimer >= 50.0f) {
+                if(m_type >= 9) Engine::GetInstance()->InsertMap(m_type);
                 m_tobeDestroy = true;
                 m_isEtten = false;
             }
@@ -127,7 +137,7 @@ void Item::AnimationState(double dt) {
             }
         }
         if(unlock4) {
-            diamond->setShow(true);
+            map->setShow(true);
             SetAnimation("chest-unlock4", 1, 120);
         }
     }

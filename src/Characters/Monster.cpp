@@ -100,11 +100,13 @@ Monster::Monster(Properties* props) : Character(props) {
 void Monster::Draw() {
     m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
 
+
     // Vector2D cam = Camera::GetInstance()->GetPostision();
     // SDL_Rect box = m_Collider->Get();
     // box.x -= cam.X;
     // box.y -= cam.Y;
     // SDL_RenderDrawRect(Engine::GetInstance()->getRenderer(), &box);
+    
 
     for(auto t : bullet) {
         t->Draw();
@@ -273,10 +275,33 @@ void Monster::Update(double dt) {
         }
         m_AttackTime += dt;
     }
+    else if(type == 5) {
+        m_Flip = SDL_FLIP_HORIZONTAL;
+        SetAnimation("totem-2-attack", 6, 120, 0);
+        
+        if(m_AttackTime >= 200.0f) {
+            Monster* wood_spike = new Monster(new Properties("wood-spike", m_Transform->X + 30, m_Transform->Y + 80, 16, 16, 3));
+            wood_spike->Load("wood-spike-idle", "assets/enemy/Sprites/Totems/Wood Spike/Idle/idle", 1);
+            wood_spike->setType(6);
+            bullet.push_back(wood_spike);
+            m_AttackTime = 0;
+        }
+        m_AttackTime += dt;
+    }
     else if(type == 3) {
         m_RigidBody->UnSetForce();
         SetAnimation("wood-spike-idle", 1, 100, 0);
         m_RigidBody->ApplyForceX(FORWARD * 3.5f); // Adjust the force as needed
+        m_AttackTime += dt;
+        if(m_AttackTime >= 200.0f) {
+            m_tobeDestroy = true;
+            m_AttackTime = 0;
+        }
+    }
+    else if(type == 6) {
+        m_RigidBody->UnSetForce();
+        SetAnimation("wood-spike-idle", 1, 100, 0);
+        m_RigidBody->ApplyForceX(BACKWARD * 3.5f); // Adjust the force as needed
         m_AttackTime += dt;
         if(m_AttackTime >= 200.0f) {
             m_tobeDestroy = true;
@@ -318,13 +343,18 @@ void Monster::Update(double dt) {
     if(m_RigidBody->Velocity().Y > 0 && !m_isGrounded) m_isFalling = true;
     else m_isFalling = false;
 
-    if(type != 3) {
+    if(type != 3 && type != 6) {
 
         // move_x
         m_RigidBody->Update(dt);
         m_LastSafePosition.X = m_Transform->X;
         m_Transform->X += m_RigidBody->Position().X;
-        m_Collider->Set(m_Transform->X + 10 * 5, m_Transform->Y + 5 * 5, 20 * 5, 20 * 5);
+        int w = 45 * 5;
+
+        if(type == 4 || type == 5 || type == 1) {
+            w = 20 * 5;
+        }
+        m_Collider->Set(m_Transform->X + 13 * 5, m_Transform->Y + 5 * 5, w, 20 * 5);
 
         if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
             m_Transform->X = m_LastSafePosition.X;
@@ -333,7 +363,7 @@ void Monster::Update(double dt) {
         m_RigidBody->Update(dt);
         m_LastSafePosition.Y = m_Transform->Y;
         m_Transform->Y += m_RigidBody->Position().Y;
-        m_Collider->Set(m_Transform->X + 10 * 5, m_Transform->Y + 5 * 5, 20 * 5, 20 * 5);
+        m_Collider->Set(m_Transform->X + 13 * 5, m_Transform->Y + 5 * 5, w, 20 * 5);
 
         if(CollisionHandler::GetInstance()->mapCollision(m_Collider->Get())) {
             m_isGrounded = true;

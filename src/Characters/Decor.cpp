@@ -115,7 +115,7 @@ void Decor::Update(double dt) {
             SetAnimation("monster-portal-idle", 8, 100, delay_time);
             m_time_idle += dt;
 
-            if(m_time_idle >= 50.0f && !spawn_enemy && near_player && (int)m_enemy.size() < 3) {
+            if(m_time_idle >= 50.0f && !spawn_enemy && near_player && (int)m_enemy.size() < 0) {
                 Monster* new_enemy = new Monster(new Properties("fish", m_Transform->X, m_Transform->Y, 34, 30, 5));
                 new_enemy->Load("fish-idle", "assets/enemy/Sprites/Fierce Tooth/01-Idle/Idle", 8);
                 new_enemy->Load("fish-run", "assets/enemy/Sprites/Fierce Tooth/02-Run/Run", 6);

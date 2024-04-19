@@ -7,6 +7,7 @@
 #include <SDL2/SDL_mixer.h>
 #include <set>
 #include "../map/GameMap.h"
+#include <fstream>
 
 #define SCREEN_WIDTH 2960
 #define SCREEN_HEIGHT 1760
@@ -27,6 +28,7 @@ class Engine {
         void Events();
         void menuGame();
         void GameOverScreen();
+        void GameWinner();
         void settingMenu();
         void highScore();
 
@@ -41,7 +43,7 @@ class Engine {
         void SetGameOver(bool game_over) { game_over_screen = game_over; }
         void setSetting(bool setting) { setting_screen = setting; }
         void setMainMenu() { 
-            if(!m_starting || game_over_screen) return;
+            if(!m_starting || game_over_screen || winner) return;
             menu_screen ^= 1; 
         }
         void setHighscore() {
@@ -49,10 +51,15 @@ class Engine {
                 high_score_screen = false;
             }
         }
+        bool getWinner() { return winner; }
         void setSetting() {
             if(setting_screen) {
                 setting_screen = false;
             }
+        }
+
+        void InsertMap(int x) {
+            MapFinal.insert(x);
         }
 
         bool getSfx() { return sfx; }
@@ -66,6 +73,7 @@ class Engine {
         bool darker = false;
 
         std::multiset<int, std::greater<int>> HighScore;
+        std::set<int> MapFinal;
 
         bool continue_screen = false;
     private:
@@ -79,6 +87,7 @@ class Engine {
         bool high_score_screen = false;
         bool menu_screen = false;
         bool setting_screen = false;
+        bool winner = false;
         SDL_Window* m_Window;
         SDL_Renderer* m_Renderer;
         static Engine* s_Instance;

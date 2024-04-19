@@ -32,21 +32,37 @@ class Item : public Character {
         virtual void setType(int type) { m_type = type; }
         inline int getType() { return m_type; }
         virtual void setCollider(int x, int y, int w, int h) { m_Collider->Set(x, y, w, h); }
+        void setPos(int x, int y) {
+            m_Transform->X = x;
+            m_Transform->Y = y;
+        }
 
         SDL_Rect getCollider() { return m_Collider->Get(); }
 
         int attackStartTicks = 0;
 
-        void addDiamond(Item* diamond) {
-            this->diamond = diamond;
+        void addMap(Item* map) {
+            this->map = map;
         }
 
         void setShow(bool show) {
             isShow = show;
         }
 
+        bool getShow() {
+            return isShow;
+        }
+
         bool isToBeDestroyed() const {
             return m_tobeDestroy;
+        }
+
+        void haveMapItem() {
+            haveMap = 1;
+        }
+
+        bool getHaveMap() {
+            return haveMap;
         }
     private :
         Animation* m_Animation;
@@ -77,9 +93,10 @@ class Item : public Character {
         bool m_isHitting;
         bool m_dead;
         bool m_isEtten;
+        bool haveMap = 0;
 
         Collider* m_Collider;
-        Item* diamond;
+        Item* map;
 
         Vector2D m_LastSafePosition;
 };

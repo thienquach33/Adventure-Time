@@ -303,7 +303,7 @@ void Sprites::Update(double dt) {
                 sword_collider.x -= 80;
             auto crab_attack = t->getCollider();
             crab_attack.x -= 80;
-            crab_attack.w += 280;
+            crab_attack.w += 150;
             if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), crab_attack) && (t->getAttack() == true)) {
                 m_dead = true;
                 break;
@@ -379,14 +379,16 @@ void Sprites::Update(double dt) {
         // check get coin
         for(auto &t : m_item) {
             if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), t->getCollider())) {
-                int cur_sfx = Mix_PlayChannel(-1, m_getCoinSound, 0);
-                if(Engine::GetInstance()->getSfx()) {
-                    Mix_Resume(cur_sfx);
+                if(t->getType() < 9 || (t->getType() >= 9 && haveKey == true)) {
+                    int cur_sfx = Mix_PlayChannel(-1, m_getCoinSound, 0);
+                    if(Engine::GetInstance()->getSfx()) {
+                        Mix_Resume(cur_sfx);
+                    }
+                    else {
+                        Mix_Pause(cur_sfx);
+                    }
+                    t->eat();
                 }
-                else {
-                    Mix_Pause(cur_sfx);
-                }
-                t->eat();
             }
         }
         for(auto &t : m_bottle) {
