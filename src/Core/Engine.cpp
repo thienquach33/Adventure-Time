@@ -44,6 +44,43 @@ std::vector<std::pair<int, int>> postision_box[3] = {
      { }
 };
 
+std::vector<std::pair<int, int>> big_water = {
+    {2, 15}, {64, 15}, {22, 15}, {50, 15}
+};
+
+std::vector<std::pair<int, int>> medium_water = {
+    {19, 15}, {40, 15}, {63, 15}, {97, 15}, {12, 15}, {81, 15}, {112, 15}, {84, 15}
+};
+
+std::vector<std::pair<int, int>> small_water = {
+    {81, 15}, {111, 15}, {116, 15}, {38, 15}, {88, 15}
+};
+
+std::vector<std::pair<int, int>> cloud_1 = {
+    {7, 10}, {25, 8}, {55, 9}, {67, 8}
+};
+
+std::vector<std::pair<int, int>> cloud_2 = {
+    {5, 3}, {44, 2}, {55, 2}, {17, 2}, {29, 1}, {119, 1}
+};
+
+std::vector<std::pair<int, int>> cloud_3 = {
+    {47, 7}, {79, 2}, {103, 1}
+};
+
+std::vector<std::pair<int, int>> water_top_pos = {
+    {36, 19}, {39, 19}, {48, 19}, {51, 19}, {54, 19}, {57, 19}, {60, 19}, {63, 19} 
+};
+
+std::vector<std::pair<int, int>> water_bottom_pos = {
+    {36, 20}, {39, 20}, {48, 20}, {51, 20}, {54, 20}, {57, 20}, {60, 20}, {63, 20},
+    {36, 21}, {39, 21}, {48, 21}, {51, 21}, {54, 21}, {57, 21}, {60, 21}, {63, 21}
+};
+
+std::vector<std::pair<int, int>> flex = {
+    {37, 19}, {40, 19}, {53, 19}, {55, 19}, {61, 19}
+};
+
 std::vector<std::pair<int, int>> red_diamond_pos = {
     { 3, 5 }, {28, 15},  {74, 14}, {96, 18}
 };
@@ -271,6 +308,7 @@ bool Engine::Init() {
 }
 
 void Engine::Init_Level(int level) {
+    MapFinal.clear();
     player->setSpawnPos(8 * 80, 15 * 80);
     player->setTurn(0);
     player->Respawn();
@@ -479,6 +517,87 @@ void Engine::Init_Level(int level) {
     ship->setType(4);
 
     decor_things.clear();
+
+    for(auto pos : water_top_pos) {
+        Decor* water_top = new Decor(new Properties("water-top", pos.first * 80, pos.second * 80, 96, 32, 2.5));
+        water_top->Load("water-top", "assets/Decor/Top/water", 4);
+        water_top->setType(12);
+        decor_things.push_back(water_top);
+    }
+
+    for(auto pos : flex) {
+        Decor* flex = new Decor(new Properties("flex", pos.first * 80, pos.second * 80 + 6, 56, 36, 3));
+        flex->Load("flex", "assets/Decor/Reflexes 1/flex", 6);
+        flex->setType(14);
+        decor_things.push_back(flex);
+    }
+
+    Decor* water_top = new Decor(new Properties("water-top", 66 * 80, 19 * 80, 64, 32, 2.5));
+    water_top->Load("water-top", "assets/Decor/Top/water", 4);
+    water_top->setType(12);
+    decor_things.push_back(water_top);
+
+    for(auto pos : water_bottom_pos) {
+        Decor* water_bottom = new Decor(new Properties("water-bottom", pos.first * 80, pos.second * 80, 96, 32, 2.5));
+        water_bottom->Load("water-bottom", "assets/Decor/Bottom/water-bottom", 1);
+        water_bottom->setType(13);
+        decor_things.push_back(water_bottom);
+    }
+
+    Decor* water_bottom = new Decor(new Properties("water-bottom", 66 * 80, 20 * 80, 64, 32, 2.5));
+    water_bottom->Load("water-bottom", "assets/Decor/Bottom/water-bottom", 1);
+    water_bottom->setType(13);
+    decor_things.push_back(water_bottom);
+
+    water_bottom = new Decor(new Properties("water-bottom", 66 * 80, 21 * 80, 64, 32, 2.5));
+    water_bottom->Load("water-bottom", "assets/Decor/Bottom/water-bottom", 1);
+    water_bottom->setType(13);
+    decor_things.push_back(water_bottom);
+
+    
+
+    for(auto pos : cloud_2) {
+        Decor* cloud = new Decor(new Properties("cloud2", pos.first * 80, pos.second * 80, 74, 24, 5));
+        cloud->Load("cloud2", "assets/Decor/cloud/Small Cloud 1", 1);
+        cloud->setType(10);
+        decor_things.push_back(cloud);
+    }
+
+    for(auto pos : cloud_1) {
+        Decor* cloud = new Decor(new Properties("cloud", pos.first * 80, pos.second * 80, 133, 35, 5));
+        cloud->Load("cloud", "assets/Decor/cloud/Small Cloud 2", 1);
+        cloud->setType(9);
+        decor_things.push_back(cloud);
+    }
+
+    for(auto pos : cloud_3) {
+        Decor* cloud = new Decor(new Properties("cloud3", pos.first * 80, pos.second * 80, 140, 39, 5));
+        cloud->Load("cloud3", "assets/Decor/cloud/Small Cloud 3", 1);
+        cloud->setType(11);
+        decor_things.push_back(cloud);
+    }
+
+    for(auto pos : big_water) {
+        Decor* water = new Decor(new Properties("water", pos.first * 80, pos.second * 80 - 10, 170, 10, 5));
+        water->Load("water", "assets/Decor/water/Water Reflect Big", 4);
+        water->setType(6);
+        decor_things.push_back(water);
+    }
+
+    for(auto pos : medium_water) {
+        Decor* water = new Decor(new Properties("water1", pos.first * 80, pos.second * 80 - 10, 53, 3, 5));
+        water->Load("water1", "assets/Decor/water/Water Reflect Medium", 4);
+        water->setType(7);
+        decor_things.push_back(water);
+    }
+
+    for(auto pos : small_water) {
+        Decor* water = new Decor(new Properties("water2", 20 * 80, 15 * 80 - 10, 35, 3, 5));
+        water->Load("water2", "assets/Decor/water/Water Reflect Small", 4);
+        water->setType(8);
+        decor_things.push_back(water);
+    }
+
     Decor* sail = new Decor(new Properties("sail-no-wind", 4120, 1200, 28, 50, 5));
     sail->Load("sail-no-wind", "assets/Decor/Sail/No Wind/sail-no-wind", 8);
     sail->Load("sail-wind", "assets/Decor/Sail/Wind/sail-wind", 4);
@@ -639,9 +758,12 @@ void Engine::Render() {
     darker = (winner == true || game_over_screen == true || menu_screen == true || high_score_screen == true || (setting_screen && m_starting));
     if(m_starting) {
         m_LevelMap->Render();
+        ship->Draw();
+        for(auto t : decor_things) {
+            t->Draw();
+        }
         player->Draw();
         if(!key_level->isToBeDestroyed()) key_level->Draw();
-        ship->Draw();
         for(auto chest : v_chest) {
             chest->Draw();
         }
@@ -716,9 +838,6 @@ void Engine::Render() {
             t->Draw();
         }
         for(auto t : portal_gate) {
-            t->Draw();
-        }
-        for(auto t : decor_things) {
             t->Draw();
         }
         for(auto t : bottle) {

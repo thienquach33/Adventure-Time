@@ -157,6 +157,33 @@ void Decor::Update(double dt) {
             }
         }
     }
+    else if(m_type == 6) {
+        SetAnimation("water", 4, 100, delay_time);
+    }
+    else if(m_type == 7) {
+        SetAnimation("water1", 4, 100, delay_time);
+    }
+    else if(m_type == 8) {
+        SetAnimation("water2", 4, 100, delay_time);
+    }
+    else if(m_type == 9) {
+        SetAnimation("cloud", 1, 100, delay_time);
+    }
+    else if(m_type == 10) {
+        SetAnimation("cloud2", 1, 100, delay_time);
+    }
+    else if(m_type == 11) {
+        SetAnimation("cloud3", 1, 100, delay_time);
+    }
+    else if(m_type == 12) {
+        SetAnimation("water-top", 4, 250, delay_time);
+    }
+    else if(m_type == 13) {
+        SetAnimation("water-bottom", 1, 250, delay_time);
+    }
+    else if(m_type == 14) {
+        SetAnimation("flex", 6, 120, delay_time);
+    }
     AnimationState(dt);
     m_Animation->Update();
 

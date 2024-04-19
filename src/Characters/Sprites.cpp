@@ -94,9 +94,9 @@ void Sprites::Update(double dt) {
 
     m_wasGrounded = m_isGrounded;
 
-    if(m_Transform->X >= 68 * 80) {
-        rp_x = 68 * 80;
-        rp_y = 14 * 80;
+    if(m_Transform->X >= 65 * 80) {
+        rp_x = 65 * 80;
+        rp_y = 16 * 80;
     }
 
     if(m_Transform->Y >= 11 * 80 || (m_Transform->X >= 22 * 80 && m_Transform->X <= 24 * 80)) {
