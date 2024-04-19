@@ -95,7 +95,7 @@ Bạn sẽ dành chiền thắng khi tiêu diệt vượt qua hết các thử t
 - Xuất/nhập file
 - Xử lý va chạm
 - Xử lý các trường hợp tương tác giữa các đối tượng
-- Hàng đợi ưu tiên và thuật toán Dijkstra giữa quái vật và nhân vật
+- Hàng đợi ưu tiên và thuật toán Dijkstra (đường đi ngắn nhất) giữa quái vật và nhân vật
 - SDL2 (SLD2_image, SDL2_mixer, SLD2_ttf)
 - Kỹ thuật Texture font, Mouse event, Key event
 - Kỹ thuật sử dụng hoạt ảnh (Sprites)
@@ -103,10 +103,11 @@ Bạn sẽ dành chiền thắng khi tiêu diệt vượt qua hết các thử t
 - Kỹ thuật Scrolling View
 
 Bên cạnh đó còn dùng 1 vài phần mềm khác để thiết kế đồ họa cho game!
+
 Asset game được tham khảo từ trang itch.io
 
 
 ## Kết luận
 Đây là dự án đầu tiên của bọn em , qua dự án này bọn em đã rút ra được rất nhiều kinh nghiệm như khả năng làm việc nhóm , hiểu cách thức hoạt động và tự tạo ra được 1 game , khả năng tìm và sửa lỗi chương trình , .... và rất nhiều các kỹ thuật khác.
 
-#### Điểm số kỳ vọng của nhóm em làlà 9.5-10 ạ!
+#### Điểm số kỳ vọng của nhóm em là 9.5-10 ạ!
