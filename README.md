@@ -35,45 +35,78 @@ Bạn sẽ dành chiền thắng khi tiêu diệt vượt qua hết các thử t
 - L : Attack 3
 ### Các đối tượng có trong game
 
+#### Nhân vật chính
+![1 gif](https://github.com/thienquach33/Adventure-Time/blob/main/assets/pic/player_run.gif)  ![2 gif](https://github.com/thienquach33/Adventure-Time/blob/main/assets/pic/player_attack.gif)
+
 #### Vật phẩm
 - Thuyền : Chiếc thuyền giúp Jack di chuyển quanh hòn đảo , khi nhảy lên nó sẽ căng buồm và đưa bạn tới đích.
 
-![1 gif](https://github.com/thienquach33/Adventure-Time/blob/main/assets/pic/ship.gif)
+![2 gif](https://github.com/thienquach33/Adventure-Time/blob/main/assets/pic/ship.gif)
 - Chìa khóa & Kho báu : Bạn cần tìm được chìa khóa để có thể mở được hòm kho báu.
 
-![2 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/chest.gif)
+![3 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/chest.gif)
 
 - Tiền : Có 2 loại tiền là tiền vàng và tiền bạc , khi nhặt được mỗi loại tiền sẽ cho bạn tăng 1 số điểm nhất định.
 
-![3 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/coin.gif)
+![4 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/coin.gif)
 
 - Đá quý : Có 3 loại đá quý , khi nhặt được mỗi loại đá sẽ cho bạn tăng 1 số điểm nhất định.
 
-![4 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/diamod.gif)
+![5 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/diamod.gif)
 
 - Thuốc tăng sức mạnh : Uống vào sẽ được thể lực bền bỉ , tăng sức bật , sức chạy.
 
-![5 gif](https://github.com/thienquach33/Adventure-Time/blob/main/assets/pic/postion.gif)
+![6 gif](https://github.com/thienquach33/Adventure-Time/blob/main/assets/pic/postion.gif)
 
 #### Quái vật
 - Cá Răng Sắc (Sharpjaw): Loài cá kích thước lớn với hàm răng sắc nhọn như lưỡi dao. Chúng sống trong vùng biển xung quanh hòn đảo và rình rập các thủy thủ bất cẩn bằng cách tấn công bất ngờ từ dưới đáy biển.
 
-![6 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/fish.gif)
+![7 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/fish.gif)
 
 - Vua Cua Đỏ (Redclaw King): Một con cua khổng lồ với chiều rộng vượt qua mười mét, được biết đến với sự hung dữ và khí phách. Vua Cua Đỏ là bậc thầy của vùng biển này, và nó sẵn lòng bảo vệ lãnh thổ của mình bằng bất kỳ giá nào.
 
-![7 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/king_crab.gif)
+![8 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/king_crab.gif)
 
 - Sao Biển Ám (Shadow Starfish): Loài sao biển đen tối, có khả năng phát sáng rất yếu, giúp chúng lẩn trốn trong bóng tối của lòng đại dương. Tuy nhiên, khả năng này cũng làm cho chúng trở nên đáng sợ khi chúng tấn công bất ngờ từ bên dưới và hút sức mạnh từ nạn nhân của chúng.
 
-![8 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/star.gif)
+![9 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/star.gif)
 
 #### Chướng ngại vật
 
 - Trụ thổ dân : Những thổ dân ở vùng đất này vô cùng hung dữ nhưng họ lại quá bận rộn để có thể theo dõi và canh chừng hòn đảo. Vì vậy , họ dựng lên 1 pháo đài vô cùng kiên cố và nguy hiểm cho bất cứ ai có ý định lăm le đến vùng đất của họ.
 
-![9 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/totem.gif)
+![10 gif](https://github.com/thienquach33/Advanture-Time-/blob/main/assets/pic/totem.gif)
 
 - Bom nguyên tử : Khi đi vào vùng bom nổ sẽ khiến bạn bị nổ tan xác!
 
-![10 gif](https://github.com/thienquach33/Adventure-Time/blob/main/assets/pic/bomb.gif)
+![11 gif](https://github.com/thienquach33/Adventure-Time/blob/main/assets/pic/bomb.gif)
+
+### Một số hình ảnh có trong game
+
+![Base2](https://github.com/thienquach33/Adventure-Time/blob/main/assets/pic/menu.png)  ![Base3](https://github.com/thienquach33/Adventure-Time/blob/main/assets/pic/setting.png)
+![Base4](https://github.com/thienquach33/Adventure-Time/blob/main/assets/pic/game_over.png)
+
+## Các kỹ thuật được sử dụng
+
+- Vòng lặp
+- Mảng 
+- Xâu
+- Vector, con trỏ
+- Xuất/nhập file
+- Xử lý va chạm
+- Xử lý các trường hợp tương tác giữa các đối tượng
+- Hàng đợi ưu tiên và thuật toán Dijkstra
+- SDL2 (SLD2_image, SDL2_mixer, SLD2_ttf)
+- Kỹ thuật Texture font, Mouse event, Key event
+- Kỹ thuật sử dụng hoạt ảnh (Sprites)
+- Sound Effects and Music
+- Kỹ thuật Scrolling View
+- AI enemy
+
+Bên cạnh đó còn dùng 1 vài phần mềm khác để thiết kế đồ họa cho game!
+
+
+## Kết luận
+Đây là dự án đầu tiên của bọn em , qua dự án này bọn em đã rút ra được rất nhiều kinh nghiệm như khả năng làm việc nhóm , hiểu cách thức hoạt động và tự tạo ra được 1 game , khả năng tìm và sửa lỗi chương trình , .... và rất nhiều các kỹ thuật khác.
+
+#### Bọn em nghĩ bọn em xứng đáng với số điểm từ 9-10 ạ!
