@@ -4,7 +4,7 @@
 TileLayer::TileLayer(int tilesize, int rowcount, int colcount, TileMap tilemap, TilesetList tilesets) : 
 m_TileSize (tilesize), m_RowCount(rowcount), m_ColCount(colcount), m_Tilemap(tilemap), m_Tilesets(tilesets)
 {
-    for (unsigned int i = 0; i < m_Tilesets.size(); i++ )
+    for ( int i = 0; i < (int) m_Tilesets.size(); i++ )
     {
         TextureManager::GetInstance()->Load(m_Tilesets[i].Name, "assets/maps/" + m_Tilesets[i].Source);
     }
@@ -13,9 +13,9 @@ m_TileSize (tilesize), m_RowCount(rowcount), m_ColCount(colcount), m_Tilemap(til
 
 void TileLayer::Render()
 {
-    for (unsigned int i = 0; i < m_RowCount; i++)
+    for ( int i = 0; i < (int) m_RowCount; i++)
     {
-        for (unsigned int j = 0; j < m_ColCount; j++)
+        for ( int j = 0; j < (int) m_ColCount; j++)
         {
             int tileID = m_Tilemap[i][j];
             if (tileID == 0)

@@ -28,14 +28,14 @@ std::vector<std::pair<int, int>> Monster::Dijkstra() {
     std::vector<std::vector<int>> dp(grid.size(), std::vector<int>(grid[0].size(), (int) 1e9 + 7));
     std::vector<std::vector<std::pair<int, int>>> pre(grid.size(), std::vector<std::pair<int, int>>(grid[0].size()));
 
-    for(int i = 0; i < grid.size(); i++) {
-        for(int j = 0; j < grid[0].size(); j++) {
+    for(int i = 0; i < (int) grid.size(); i++) {
+        for(int j = 0; j < (int) grid[0].size(); j++) {
             pre[i][j] = {-1, -1};
         }
     }
 
     dp[m_Transform->Y / 80][m_Transform->X / 80] = 0;
-    pq.push({dp[m_Transform->Y / 80][m_Transform->X / 80], m_Transform->Y / 80, m_Transform->X / 80});
+    pq.push({dp[(int) m_Transform->Y / 80][(int) m_Transform->X / 80], (int) m_Transform->Y / 80, (int) m_Transform->X / 80});
 
     while(!pq.empty()) {
         auto cur = pq.top();
@@ -50,7 +50,7 @@ std::vector<std::pair<int, int>> Monster::Dijkstra() {
             int u = cur.u + dir.first;
             int v = cur.v + dir.second;
 
-            if(u < 0 || u >= grid.size() || v < 0 || v >= grid[0].size()) continue;
+            if(u < 0 || u >= (int) grid.size() || v < 0 || v >= (int) grid[0].size()) continue;
 
             if(grid[u][v] == 1) continue;
 

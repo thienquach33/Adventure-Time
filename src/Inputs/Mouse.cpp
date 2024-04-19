@@ -24,7 +24,7 @@ void Mouse::Update() {
 
 void Mouse::Draw() {
     TextureManager::GetInstance()->DrawMouse("mouse", 0, 0, 16, 16, srect);
-    Vector2D cam = Camera::GetInstance()->GetPostision();
+    // Vector2D cam = Camera::GetInstance()->GetPostision();
     // SDL_Rect box = {point.x, point.y, 16, 16};
     // box.x -= cam.X;
     // box.y -= cam.Y;

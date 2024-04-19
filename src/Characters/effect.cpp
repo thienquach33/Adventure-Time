@@ -21,7 +21,7 @@ void Effect::Draw() {
     if(m_isAttacking) {
         m_Animation->Draw(m_Transform->X, m_Transform->Y, m_Width, m_Height, m_scale, m_Flip);
 
-        Vector2D cam = Camera::GetInstance()->GetPostision();
+        // Vector2D cam = Camera::GetInstance()->GetPostision();
         // SDL_Rect box = m_Collider->Get();
         // box.x -= cam.X;
         // box.y -= cam.Y;

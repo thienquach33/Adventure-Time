@@ -203,8 +203,6 @@ void Sprites::Update(double dt) {
         m_isAttacking = false;
         m_AttackTime = ATTACK_TIME;
     }
-
-    bool ok = false;
     bool above = false;
 
     if(CollisionHandler::GetInstance()->checkCollision(m_Collider->Get(), ship->getCollider())) {

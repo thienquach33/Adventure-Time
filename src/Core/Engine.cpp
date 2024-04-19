@@ -302,7 +302,6 @@ bool Engine::Init() {
     }
 
     SDL_Surface* surface = IMG_Load("assets/ui/menu_screen.png");
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(m_Renderer, surface);
 
     return m_isRunning = true;
 }
@@ -592,7 +591,7 @@ void Engine::Init_Level(int level) {
     }
 
     for(auto pos : small_water) {
-        Decor* water = new Decor(new Properties("water2", 20 * 80, 15 * 80 - 10, 35, 3, 5));
+        Decor* water = new Decor(new Properties("water2", pos.first * 80, pos.second * 80 - 10, 35, 3, 5));
         water->Load("water2", "assets/Decor/water/Water Reflect Small", 4);
         water->setType(8);
         decor_things.push_back(water);
