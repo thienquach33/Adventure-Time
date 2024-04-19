@@ -17,7 +17,6 @@ bool TextureManager::LoadText(std::string text, SDL_Color color, TTF_Font* font)
 {
     SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
     SDL_Texture* texture = SDL_CreateTextureFromSurface(Engine::GetInstance()->getRenderer(), surface);
-    Uint8 r, g, b;
     m_TextureMap[text] = texture;
     return true;
 }
@@ -26,7 +25,7 @@ void TextureManager::Draw(std::string id, double x, double y, int width, int hei
 {
     SDL_Rect srcRect = {0, 0, width, height};
     Vector2D cam = Camera::GetInstance()->GetPostision();
-    SDL_Rect dstRect = {x - cam.X, y - cam.Y, (double) width * scale, (double) height * scale};
+    SDL_Rect dstRect = {(int) x - cam.X, (int) y - cam.Y, (double) width * scale, (double) height * scale};
     SDL_Texture* texture = m_TextureMap[id];
     if(Engine::GetInstance()->darker == true) {
         SDL_SetTextureColorMod(texture, 128, 128, 128); // 50% brightness

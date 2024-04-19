@@ -82,7 +82,7 @@ std::vector<std::pair<int, int>> flex = {
 };
 
 std::vector<std::pair<int, int>> red_diamond_pos = {
-    { 3, 5 }, {28, 15},  {74, 14}, {96, 18}
+    { 3, 5 }, {40, 5},  {84, 4}, {96, 18}
 };
 std::vector<std::pair<int, int>> sliver_postision_item[3] = {
     { {12, 19}, {20, 16}, {27, 15}, {70, 16}, {103, 14}, {91, 19}, {126, 8}, {23, 5}, {17, 6}, {97, 17}},
@@ -771,7 +771,6 @@ void Engine::Render() {
         int bonus = Camera::GetInstance()->GetPostision().X;
 
         std::string current_score = "score " + std::to_string(score_game);
-        std::ifstream HighScoreFileget("src/Core/HighScore.txt");
 
         for(int i = 0; i < (int) current_score.size(); i++) {
             std::string text_name = "big-text-" + std::to_string(current_score[i] - 'a' + 1);
@@ -782,20 +781,19 @@ void Engine::Render() {
             TextureManager::GetInstance()->Draw(text_name, 550 + i * 50 + bonus, 0, 10, 11, 5);
         }
 
-        int high_score_best = 0;
+        std::ifstream HighScoreFileget("src/Core/HighScore.txt");
 
-        HighScoreFileget >> high_score_best;
-        
+        HighScore.clear();
+        HighScore.insert(score_game);
+        int x;
+        while(HighScoreFileget >> x) {
+            HighScore.insert(x);
+        }
         HighScoreFileget.close();
 
+        int high_score_best = (HighScore.size() == 0) ? 0 : *HighScore.begin();
+
         high_score_best = std::max(high_score_best, score_game);
-
-        std::fstream HighScoreFile;
-        HighScoreFile.open("src/Core/HighScore.txt");
-
-        HighScoreFile << high_score_best;
-
-        HighScoreFile.close();
 
         std::string high_score_all_game = "high score " + std::to_string(high_score_best);
 
@@ -1245,6 +1243,18 @@ void Engine::GameWinner() {
 
 void Engine::GameOverScreen() {
     if(game_over_screen == false || high_score_screen) return;
+    if(update_point == false) {
+
+        std::fstream HighScoreFile;
+        HighScoreFile.open("src/Core/HighScore.txt");
+
+        for(auto x : HighScore) {
+            HighScoreFile << x << "\n";
+        }
+
+        HighScoreFile.close();
+        update_point = true;
+    }
     int bonus = Camera::GetInstance()->GetPostision().X;
     for(int i = 0; i < NUM_OF_BANNER; i++) {
         std::string game_over_banner = "banner-" + banner_text[i];
@@ -1296,6 +1306,7 @@ void Engine::GameOverScreen() {
         SDL_Rect temp_mouse = Mouse::getInstance()->getPoint();
         if(SDL_HasIntersection(&temp, &temp_mouse)) {
             if(Mouse::getInstance()->oneClickedCheck()) {
+                update_point = false;
                 game_over_screen = false;
                 m_starting = false;
                 return;
@@ -1315,6 +1326,7 @@ void Engine::GameOverScreen() {
                     high_score_screen = true;
                 }
                 else {
+                    update_point = false;
                     score_game = 0;
                     game_over_screen = false;
                     Init_Level(1);
@@ -1494,6 +1506,7 @@ bool Engine::Clean() {
     SDL_Quit();
     TTF_CloseFont(font);
     SDL_Log("Success Clean !!!\n");
+    return true;
 }
 
 void Engine::Events() {

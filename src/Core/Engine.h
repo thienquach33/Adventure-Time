@@ -64,6 +64,8 @@ class Engine {
 
         bool getSfx() { return sfx; }
 
+        bool update_point = false;
+
         int cur_level = 0;
         std::vector<bool> loaded_level = {false, false, false};
         bool esc_menu = false;
@@ -72,7 +74,7 @@ class Engine {
 
         bool darker = false;
 
-        std::multiset<int, std::greater<int>> HighScore;
+        std::set<int, std::greater<int>> HighScore;
         std::set<int> MapFinal;
 
         bool continue_screen = false;
