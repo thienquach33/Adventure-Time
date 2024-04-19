@@ -88,25 +88,25 @@ Bạn sẽ dành chiền thắng khi tiêu diệt vượt qua hết các thử t
 
 ## Các kỹ thuật được sử dụng
 
-- Vòng lặp
-- Mảng 
-- Xâu
-- Vector, con trỏ
+- Lập trình hướng đối tượng: sử dụng tính chất kế thừa, đa hình.
+- Mảng, Vòng lặp, Xâu, ...
+- Thư viện STL : vector, map, set, ...
+- Con trỏ
 - Xuất/nhập file
 - Xử lý va chạm
 - Xử lý các trường hợp tương tác giữa các đối tượng
-- Hàng đợi ưu tiên và thuật toán Dijkstra
+- Hàng đợi ưu tiên và thuật toán Dijkstra giữa quái vật và nhân vật
 - SDL2 (SLD2_image, SDL2_mixer, SLD2_ttf)
 - Kỹ thuật Texture font, Mouse event, Key event
 - Kỹ thuật sử dụng hoạt ảnh (Sprites)
 - Sound Effects and Music
 - Kỹ thuật Scrolling View
-- AI enemy
 
 Bên cạnh đó còn dùng 1 vài phần mềm khác để thiết kế đồ họa cho game!
+Asset game được tham khảo từ trang itch.io
 
 
 ## Kết luận
 Đây là dự án đầu tiên của bọn em , qua dự án này bọn em đã rút ra được rất nhiều kinh nghiệm như khả năng làm việc nhóm , hiểu cách thức hoạt động và tự tạo ra được 1 game , khả năng tìm và sửa lỗi chương trình , .... và rất nhiều các kỹ thuật khác.
 
-#### Bọn em nghĩ bọn em xứng đáng với số điểm từ 9-10 ạ!
+#### Điểm số kỳ vọng của nhóm em làlà 9.5-10 ạ!
