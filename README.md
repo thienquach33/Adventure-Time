@@ -110,4 +110,4 @@ Asset game được tham khảo từ trang itch.io
 ## Kết luận
 Đây là dự án đầu tiên của bọn em , qua dự án này bọn em đã rút ra được rất nhiều kinh nghiệm như khả năng làm việc nhóm , hiểu cách thức hoạt động và tự tạo ra được 1 game , khả năng tìm và sửa lỗi chương trình , .... và rất nhiều các kỹ thuật khác.
 
-#### Điểm số kỳ vọng của nhóm em là 9.5-10 ạ!
+#### Điểm số kỳ vọng của nhóm em là 9 - 9.5 ạ!
