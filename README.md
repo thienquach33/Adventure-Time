@@ -95,6 +95,7 @@ Bạn sẽ dành chiền thắng khi tiêu diệt vượt qua hết các thử t
 - Xuất/nhập file
 - Xử lý va chạm
 - Xử lý các trường hợp tương tác giữa các đối tượng
+- Sử dụng kết hợp kiến thức Toán và Vật lý cơ bản cho phần chuyển động và điều hướng của các nhân vật.
 - Hàng đợi ưu tiên và thuật toán Dijkstra (đường đi ngắn nhất) giữa quái vật và nhân vật
 - SDL2 (SLD2_image, SDL2_mixer, SLD2_ttf)
 - Kỹ thuật Texture font, Mouse event, Key event
