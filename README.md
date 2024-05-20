@@ -107,6 +107,8 @@ Bên cạnh đó còn dùng 1 vài phần mềm khác để thiết kế đồ h
 
 Asset game được tham khảo từ trang itch.io
 
+Link video gameplay : https://www.youtube.com/watch?v=fp-btWevW4I
+
 
 ## Kết luận
 Đây là dự án đầu tiên của bọn em , qua dự án này bọn em đã rút ra được rất nhiều kinh nghiệm như khả năng làm việc nhóm , hiểu cách thức hoạt động và tự tạo ra được 1 game , khả năng tìm và sửa lỗi chương trình , .... và rất nhiều các kỹ thuật khác.
